@@ -56,7 +56,7 @@ function Page() {
       </header>
 
       <section className="relative flex min-h-[92vh] items-end overflow-hidden">
-        <EditableImage k="hero" alt="Magarci na pašnjaku" eager wrapperClassName="absolute inset-0" className="size-full object-cover" />
+        <EditableImage k="hero" alt="Magarci na pašnjaku" eager wrapperClassName="absolute inset-0" className="size-full object-cover" buttonClassName="z-30" />
         <div className="pointer-events-none absolute inset-0 bg-hero-overlay" />
         <div className="relative z-10 mx-auto w-full max-w-6xl px-6 pb-20 text-hero-foreground">
           <EditableText k="hero.eyebrow" as="p" className="mb-4 text-sm uppercase tracking-[0.2em] opacity-90" />
