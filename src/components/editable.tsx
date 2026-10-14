@@ -96,12 +96,14 @@ export function EditableImage({
   alt,
   className,
   wrapperClassName,
+  buttonClassName,
   eager,
 }: {
   k: string;
   alt: string;
   className?: string;
   wrapperClassName?: string;
+  buttonClassName?: string;
   eager?: boolean;
 }) {
   const { img, editMode, save } = useSite();
@@ -132,7 +134,10 @@ export function EditableImage({
           <button
             type="button"
             onClick={() => input.current?.click()}
-            className="absolute right-4 top-4 z-20 inline-flex items-center gap-2 rounded-full bg-edit px-4 py-2 text-sm font-medium text-edit-foreground shadow-lg"
+            className={cn(
+              "absolute right-4 top-4 z-20 inline-flex items-center gap-2 rounded-full bg-edit px-4 py-2 text-sm font-medium text-edit-foreground shadow-lg",
+              buttonClassName,
+            )}
           >
             {busy ? <Loader2 className="size-4 animate-spin" /> : <ImageUp className="size-4" />}
             Promijeni sliku
