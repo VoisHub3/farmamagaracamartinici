@@ -12,8 +12,8 @@ const MODEL = "openai/gpt-6-astra";
 const MAX_KNOWLEDGE = 300_000;
 
 async function loadKnowledge() {
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
-  const sb = createClient<Database>(process.env.SUPABASE_URL!, key, {
+  const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
+  const sb = createClient<Database>(process.env["SUPABASE_URL"]!, key, {
     auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
     global: {
       fetch: (input, init) => {
@@ -30,7 +30,7 @@ async function loadKnowledge() {
 }
 
 export async function handleChat(request: Request) {
-  const apiKey = process.env.LOVABLE_API_KEY;
+  const apiKey = process.env["LOVABLE_API_KEY"];
   if (!apiKey) return Response.json({ error: "AI is not configured" }, { status: 500 });
 
   let body: { messages?: UIMessage[]; lang?: string };
