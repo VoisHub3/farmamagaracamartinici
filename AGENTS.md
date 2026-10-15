@@ -13,6 +13,7 @@
 - Page texts/images live in `site_content` (keys `t:<key>:<sr|en>`, `img:<key>`); defaults in `src/lib/content-defaults.ts`. Why: mini page builder edits overrides only.
 - Images are stored as compressed data URLs in the database because the workspace blocks public storage buckets.
 - Editable images and gallery thumbnails use intrinsic sizing constrained by their container, and upload compression keeps pixel dimensions unchanged. Why: replacements must not be cropped, stretched, or automatically enlarged.
+- Header image bounds come from the image, with content overlaid and editor outer spacing suppressed; logo upload controls sit outside navigation links and file inputs stop click propagation. Why: avoid image background bands and navigation interrupting uploads.
 - Admin = `user_roles` row; first signup becomes admin via trigger. Why: single-owner site.
 - Chatbot knowledge is one row in `knowledge_base`, injected whole into the system prompt in `src/lib/ai/chat.server.ts`. Why: single document, no retrieval needed.
 - Page layouts are JSON block lists in site_content (`layout:<slug>`, page list in `pages`, gallery lists in `gal:<id>`), rendered by src/components/page-builder.tsx. Why: reuse the single content table for the page builder.

@@ -1,4 +1,6 @@
 # Tasks
+- [ ] Remove background bands around the header image and overlay the menu; switch to white/black on scroll.
+- [ ] Repair logo replacement and verify a real upload and restoration as admin.
 - [x] Preserve uploaded image dimensions and proportions across blocks, galleries, logos and the main image; verified portrait/wide replacements, gallery proportions, reload and narrow layouts.
 - [x] Add side-by-side block creation and centered partial rows.
 - [x] Add configurable button actions and social links inside blocks.

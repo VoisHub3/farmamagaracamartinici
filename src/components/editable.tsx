@@ -105,7 +105,9 @@ async function fileToDataUrl(file: File): Promise<string> {
   if (!context) throw new Error("Slika se ne može obraditi");
   context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   bitmap.close();
-  return canvas.toDataURL("image/jpeg", 0.82);
+  return file.type === "image/png" || file.type === "image/webp"
+    ? canvas.toDataURL("image/png")
+    : canvas.toDataURL("image/jpeg", 0.82);
 }
 
 export function EditableImage({
@@ -157,9 +159,11 @@ export function EditableImage({
       )}
       {editMode && (
         <>
-          <input ref={input} type="file" accept="image/*" hidden onChange={(e) => onFile(e.target.files?.[0])} />
-          <button
+          <input ref={input} type="file" accept="image/*" hidden onClick={(e) => e.stopPropagation()} onChange={(e) => onFile(e.target.files?.[0])} />
+          <Button
             type="button"
+            size={compact ? "icon" : "default"}
+            disabled={busy}
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); input.current?.click(); }}
             title="Promijeni sliku"
             className={cn(
@@ -170,7 +174,7 @@ export function EditableImage({
           >
             {busy ? <Loader2 className="size-4 animate-spin" /> : <ImageUp className="size-4" />}
             {!compact && "Promijeni sliku"}
-          </button>
+          </Button>
         </>
       )}
     </div>
