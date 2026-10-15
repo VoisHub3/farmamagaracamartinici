@@ -1,5 +1,5 @@
 import { useState, type CSSProperties, type ReactNode } from "react";
-import { ArrowDown, ArrowUp, Columns3, Image, Images, Plus, Settings2, Trash2, Type, AlignLeft } from "lucide-react";
+import { ArrowDown, ArrowUp, Columns3, Image, Images, Plus, Settings2, Trash2, Type, AlignLeft, AlignCenter, AlignRight, MousePointerClick, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { useSite } from "@/lib/site-content";
 import { EditableImage, EditableText } from "@/components/editable";
@@ -8,11 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BuilderButton, BuilderSocialLinks } from "@/components/builder-actions";
 
-type ElementKind = "title" | "text" | "image" | "gallery";
+type ElementKind = "title" | "text" | "image" | "gallery" | "button" | "social";
 type SectionElement = { id: string; type: ElementKind; margin: number; padding: number };
 type Column = { id: string; width: 25 | 50 | 75 | 100; padding: number; gap: number; elements: SectionElement[] };
-export type SectionSettings = { background: string; customColor?: string; paddingY: number; paddingX: number; marginTop: number; marginBottom: number; gap: number };
+export type SectionSettings = { background: string; customColor?: string; paddingY: number; paddingX: number; marginTop: number; marginBottom: number; gap: number; alignment?: "left" | "center" | "right" };
 const defaults: SectionSettings = { background: "background", paddingY: 64, paddingX: 24, marginTop: 0, marginBottom: 0, gap: 24 };
 const uid = () => crypto.randomUUID().slice(0, 8);
 const backgrounds = [
@@ -50,12 +51,12 @@ export function SectionSettingsButton({ id }: { id: string }) {
       <Label>Boja pozadine</Label><div className="flex flex-wrap gap-2">{backgrounds.map((bg) => <Button key={bg.id} variant="outline" size="icon" title={bg.label} aria-label={bg.label} aria-pressed={draft.background === bg.id} className={draft.background === bg.id ? "ring-2 ring-edit" : ""} onClick={() => change({ background: bg.id })}><span className={`size-6 rounded border ${bg.color}`} /></Button>)}</div>
       <Label className="flex items-center justify-between">Prilagođena boja<Input type="color" aria-label="Prilagođena boja" className="h-10 w-20 p-1" value={draft.customColor ?? "#ffffff"} onChange={(e) => change({ background: "custom", customColor: e.target.value })} /></Label>
       <div className="grid grid-cols-2 gap-4"><NumberSetting label="Unutrašnji razmak gore/dolje" value={draft.paddingY} onChange={(paddingY) => change({ paddingY })} /><NumberSetting label="Unutrašnji razmak lijevo/desno" value={draft.paddingX} onChange={(paddingX) => change({ paddingX })} /><NumberSetting label="Margina iznad" value={draft.marginTop} onChange={(marginTop) => change({ marginTop })} /><NumberSetting label="Margina ispod" value={draft.marginBottom} onChange={(marginBottom) => change({ marginBottom })} /><NumberSetting label="Razmak između blokova" value={draft.gap} onChange={(gap) => change({ gap })} /></div>
+      <Label>Poravnanje blokova u redu</Label><div className="flex gap-2">{([{ value: "left", label: "Lijevo", Icon: AlignLeft }, { value: "center", label: "Centrirano", Icon: AlignCenter }, { value: "right", label: "Desno", Icon: AlignRight }] as const).map(({ value, label, Icon }) => <Button key={value} variant="outline" size="icon" aria-label={label} title={label} aria-pressed={(draft.alignment ?? "left") === value} className={(draft.alignment ?? "left") === value ? "ring-2 ring-edit" : ""} onClick={() => change({ alignment: value })}><Icon /></Button>)}</div>
       <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Otkaži</Button><Button disabled={busy} onClick={async () => { setBusy(true); try { await save({ [key]: JSON.stringify(draft) }); setOpen(false); toast.success("Izgled sačuvan"); } catch { toast.error("Izgled nije sačuvan"); } finally { setBusy(false); } }}>Sačuvaj</Button></DialogFooter>
     </DialogContent></Dialog>
   </>;
 }
-const kinds: { type: ElementKind; label: string; icon: typeof Type }[] = [{ type: "title", label: "Naslov", icon: Type }, { type: "text", label: "Tekst", icon: AlignLeft }, { type: "image", label: "Slika", icon: Image }, { type: "gallery", label: "Galerija", icon: Images }];
-const widths = { 25: "md:col-span-1", 50: "md:col-span-2", 75: "md:col-span-3", 100: "md:col-span-4" };
+const kinds: { type: ElementKind; label: string; icon: typeof Type }[] = [{ type: "title", label: "Naslov", icon: Type }, { type: "text", label: "Tekst", icon: AlignLeft }, { type: "image", label: "Slika", icon: Image }, { type: "gallery", label: "Galerija", icon: Images }, { type: "button", label: "Dugme", icon: MousePointerClick }, { type: "social", label: "Društvene mreže", icon: Share2 }];
 export function FlexibleSection({ id, renderGallery }: { id: string; renderGallery: (id: string) => ReactNode }) {
   const { json, save, editMode } = useSite();
   const key = `section:${id}`;
@@ -66,8 +67,15 @@ export function FlexibleSection({ id, renderGallery }: { id: string; renderGalle
   const [gap, setGap] = useState(16);
   const [margin, setMargin] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [newWidth, setNewWidth] = useState<Column["width"]>(50);
   const persist = async (next: Column[], extra: Record<string, string> = {}) => { setBusy(true); try { await save({ [key]: JSON.stringify(next), ...extra }); return true; } catch { toast.error("Promjena nije sačuvana"); return false; } finally { setBusy(false); } };
   const update = (cid: string, patch: Partial<Column>) => persist(columns.map((c) => c.id === cid ? { ...c, ...patch } : c));
+  const addColumn = (width: Column["width"], after?: string) => {
+    const next = [...columns];
+    const index = after ? columns.findIndex((c) => c.id === after) + 1 : columns.length;
+    next.splice(index, 0, { id: uid(), width, padding: 16, gap: 16, elements: [] });
+    persist(next);
+  };
   const addElement = (c: Column, type: ElementKind) => {
     const eid = uid();
     const extra: Record<string, string> = {};
@@ -77,8 +85,8 @@ export function FlexibleSection({ id, renderGallery }: { id: string; renderGalle
   const reorder = (items: SectionElement[], index: number, direction: number) => { const next = [...items]; const target = index + direction; const current = next[index]; const other = next[target]; if (!current || !other) return items; next[index] = other; next[target] = current; return next; };
   return <section className="builder-section w-full" data-section-id={id} style={sectionStyle(settings)}>
     <fieldset disabled={busy} className="min-w-0">
-    <div className="grid min-w-0 grid-cols-1 md:grid-cols-4" style={{ gap: settings.gap }}>
-      {columns.map((c, index) => <div key={c.id} className={`min-w-0 ${widths[c.width]} ${editMode ? "border border-dashed border-edit" : ""}`} style={{ padding: c.padding }} data-column-width={c.width}>
+    <div className={`builder-columns min-w-0 ${settings.alignment === "center" ? "justify-center" : settings.alignment === "right" ? "justify-end" : "justify-start"}`} style={{ "--block-gap": `${settings.gap}px` } as CSSProperties}>
+      {columns.map((c, index) => <div key={c.id} className={`builder-column min-w-0 ${editMode ? "border border-dashed border-edit" : ""}`} style={{ padding: c.padding, "--block-width": c.width / 100 } as CSSProperties} data-column-width={c.width}>
         {editMode && <div className="mb-4 flex flex-wrap items-center gap-1 border-b border-edit/30 pb-2 text-foreground"><span className="mr-auto flex items-center gap-1 text-xs"><Columns3 className="size-4" /> Blok {index + 1}</span><Select value={String(c.width)} onValueChange={(v) => update(c.id, { width: Number(v) as Column["width"] })}><SelectTrigger aria-label={`Širina bloka ${index + 1}`} className="w-24 bg-background"><SelectValue /></SelectTrigger><SelectContent>{[25, 50, 75, 100].map((w) => <SelectItem key={w} value={String(w)}>{w}%</SelectItem>)}</SelectContent></Select><Button variant="outline" size="icon-sm" title="Razmaci bloka" aria-label="Razmaci bloka" onClick={() => { setSelected({ column: c.id }); setPadding(c.padding); setGap(c.gap); }}><Settings2 /></Button><Button variant="outline" size="icon-sm" title="Obriši unutrašnji blok" aria-label="Obriši unutrašnji blok" onClick={() => { if (confirm("Obrisati blok sa svim sadržajem?")) persist(columns.filter((col) => col.id !== c.id)); }}><Trash2 /></Button></div>}
         <div className="flex min-w-0 flex-col" style={{ gap: c.gap }}>{c.elements.map((el, i) => <div key={el.id} className="min-w-0" style={{ padding: el.padding, marginTop: el.margin }}>
           {editMode && <div className="mb-2 flex items-center gap-1 text-foreground"><span className="mr-auto text-xs">{kinds.find((k) => k.type === el.type)?.label}</span><Button size="icon-xs" variant="outline" title="Pomjeri objekat gore" aria-label="Pomjeri objekat gore" disabled={i === 0} onClick={() => update(c.id, { elements: reorder(c.elements, i, -1) })}><ArrowUp /></Button><Button size="icon-xs" variant="outline" title="Pomjeri objekat dolje" aria-label="Pomjeri objekat dolje" disabled={i === c.elements.length - 1} onClick={() => update(c.id, { elements: reorder(c.elements, i, 1) })}><ArrowDown /></Button><Button size="icon-xs" variant="outline" title="Razmaci objekta" aria-label="Razmaci objekta" onClick={() => { setSelected({ column: c.id, element: el.id }); setPadding(el.padding); setMargin(el.margin); }}><Settings2 /></Button><Button size="icon-xs" variant="outline" title="Obriši objekat" aria-label="Obriši objekat" onClick={() => { if (confirm("Obrisati objekat?")) update(c.id, { elements: c.elements.filter((item) => item.id !== el.id) }); }}><Trash2 /></Button></div>}
@@ -86,11 +94,14 @@ export function FlexibleSection({ id, renderGallery }: { id: string; renderGalle
           {el.type === "text" && <EditableText k={`element.${el.id}`} as="p" className="whitespace-pre-line break-words text-lg leading-relaxed" />}
           {el.type === "image" && <EditableImage k={`element.${el.id}`} alt="" className="aspect-[4/3] w-full object-cover" />}
           {el.type === "gallery" && renderGallery(el.id)}
+          {el.type === "button" && <BuilderButton id={el.id} />}
+          {el.type === "social" && <BuilderSocialLinks id={el.id} />}
         </div>)}</div>
         {editMode && <div className="mt-4 flex flex-wrap gap-2">{kinds.map(({ type, label, icon: Icon }) => <Button key={type} variant="outline" size="sm" onClick={() => addElement(c, type)}><Icon />{label}</Button>)}</div>}
+        {editMode && <Button variant="ghost" size="sm" className="mt-3" onClick={() => addColumn(newWidth, c.id)}><Plus />Dodaj blok pored</Button>}
       </div>)}
     </div>
-    {editMode && <Button variant="outline" className="mt-6" onClick={() => persist([...columns, { id: uid(), width: 100, padding: 16, gap: 16, elements: [] }])}><Plus />Dodaj unutrašnji blok</Button>}
+    {editMode && <div className="mt-6 flex flex-wrap items-center gap-3 text-foreground"><Label htmlFor={`new-width-${id}`}>Širina novog bloka</Label><Select value={String(newWidth)} onValueChange={(v) => setNewWidth(Number(v) as Column["width"])}><SelectTrigger id={`new-width-${id}`} aria-label="Širina novog bloka" className="w-24 bg-background"><SelectValue /></SelectTrigger><SelectContent>{[25, 50, 75, 100].map((w) => <SelectItem key={w} value={String(w)}>{w}%</SelectItem>)}</SelectContent></Select><Button variant="outline" onClick={() => addColumn(newWidth)}><Plus />Dodaj unutrašnji blok</Button></div>}
     </fieldset>
     <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}><DialogContent><DialogHeader><DialogTitle>{selected?.element ? "Razmaci objekta" : "Razmaci bloka"}</DialogTitle></DialogHeader><NumberSetting label="Unutrašnji razmak" value={padding} onChange={setPadding} />{selected?.element ? <NumberSetting label="Margina iznad objekta" value={margin} onChange={setMargin} /> : <NumberSetting label="Razmak između objekata" value={gap} onChange={setGap} />}<DialogFooter><Button variant="outline" onClick={() => setSelected(null)}>Otkaži</Button><Button disabled={busy} onClick={async () => { if (!selected) return; setBusy(true); const next = columns.map((c) => c.id !== selected.column ? c : selected.element ? { ...c, elements: c.elements.map((el) => el.id === selected.element ? { ...el, padding, margin } : el) } : { ...c, padding, gap }); if (await persist(next)) setSelected(null); setBusy(false); }}>Sačuvaj</Button></DialogFooter></DialogContent></Dialog>
   </section>;
