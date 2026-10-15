@@ -353,11 +353,11 @@ function HeroBlock() {
       <div className="pointer-events-none absolute inset-0 bg-hero-overlay" />
       <div className="absolute inset-x-0 bottom-0 z-10 mx-auto w-full max-w-6xl px-6 pb-4 text-hero-foreground sm:pb-10 lg:pb-20">
         <EditableText k="hero.eyebrow" as="p" className="mb-2 text-xs uppercase opacity-90 sm:mb-4 sm:text-sm" />
-        <EditableText k="hero.title" as="h1" className="max-w-3xl text-2xl font-semibold leading-[1.05] sm:text-5xl lg:text-7xl" />
+        <EditableText k="hero.title" as="h1" className="max-w-3xl text-xl font-semibold leading-[1.05] sm:text-5xl lg:text-7xl" />
         <EditableText k="hero.subtitle" as="p" className="mt-2 max-w-xl text-xs opacity-90 sm:mt-6 sm:text-lg" />
-        <div className="mt-3 flex flex-wrap gap-3 sm:mt-8">
-          <Button variant="hero" size="lg" onClick={() => setChatOpen(true)}><EditableText k="hero.cta" /></Button>
-          <Button variant="heroGhost" size="lg" asChild><a href="#prica"><EditableText k="hero.cta2" /></a></Button>
+        <div className="mt-3 flex flex-wrap gap-2 sm:mt-8 sm:gap-3">
+          <Button variant="hero" size="lg" className="h-8 px-3 text-xs sm:h-12 sm:px-8 sm:text-base" onClick={() => setChatOpen(true)}><EditableText k="hero.cta" /></Button>
+          <Button variant="heroGhost" size="lg" className="h-8 px-3 text-xs sm:h-12 sm:px-8 sm:text-base" asChild><a href="#prica"><EditableText k="hero.cta2" /></a></Button>
         </div>
       </div>
     </section>
