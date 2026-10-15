@@ -134,6 +134,20 @@
   color: var(--section-foreground);
   padding: var(--section-padding-y) min(var(--section-padding-x), 8%);
 }
+.builder-columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--block-gap);
+}
+.builder-column {
+  flex: 0 0 100%;
+  max-width: 100%;
+}
+@media (min-width: 768px) {
+  .builder-column {
+    flex-basis: calc((100% + var(--block-gap)) * var(--block-width) - var(--block-gap));
+  }
+}
 .builder-configured {
   background: var(--section-background);
   color: var(--section-foreground);
