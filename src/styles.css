@@ -136,6 +136,13 @@
   max-width: 100%;
   object-fit: contain;
 }
+/* Image that always spans the full width of its block, keeping the uploaded proportions. */
+.builder-image-full {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+}
 .builder-section {
   background: var(--section-background);
   color: var(--section-foreground);
