@@ -210,7 +210,7 @@ function SiteHeader({ overlay }: { overlay: boolean }) {
       ref={headerRef}
       className={cn(
         "inset-x-0 top-0 z-50 transition-[background-color,color,box-shadow,border-color] duration-300",
-        overlay ? (stuck ? "fixed" : "absolute") : "sticky",
+        overlay ? (scrolled ? "fixed" : "absolute") : "sticky",
         solid ? "border-b border-border/70 bg-background/85 text-foreground shadow-sm backdrop-blur-md" : "text-hero-foreground",
       )}
     >
