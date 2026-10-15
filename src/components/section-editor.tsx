@@ -66,7 +66,7 @@ export function FlexibleSection({ id, renderGallery }: { id: string; renderGalle
   const [gap, setGap] = useState(16);
   const [margin, setMargin] = useState(0);
   const [busy, setBusy] = useState(false);
-  const persist = async (next: Column[], extra: Record<string, string> = {}) => { try { await save({ [key]: JSON.stringify(next), ...extra }); return true; } catch { toast.error("Promjena nije sačuvana"); return false; } };
+  const persist = async (next: Column[], extra: Record<string, string> = {}) => { setBusy(true); try { await save({ [key]: JSON.stringify(next), ...extra }); return true; } catch { toast.error("Promjena nije sačuvana"); return false; } finally { setBusy(false); } };
   const update = (cid: string, patch: Partial<Column>) => persist(columns.map((c) => c.id === cid ? { ...c, ...patch } : c));
   const addElement = (c: Column, type: ElementKind) => {
     const eid = uid();
@@ -76,6 +76,7 @@ export function FlexibleSection({ id, renderGallery }: { id: string; renderGalle
   };
   const reorder = (items: SectionElement[], index: number, direction: number) => { const next = [...items]; const target = index + direction; const current = next[index]; const other = next[target]; if (!current || !other) return items; next[index] = other; next[target] = current; return next; };
   return <section className="builder-section w-full" data-section-id={id} style={sectionStyle(settings)}>
+    <fieldset disabled={busy} className="min-w-0">
     <div className="grid min-w-0 grid-cols-1 md:grid-cols-4" style={{ gap: settings.gap }}>
       {columns.map((c, index) => <div key={c.id} className={`min-w-0 ${widths[c.width]} ${editMode ? "border border-dashed border-edit" : ""}`} style={{ padding: c.padding }} data-column-width={c.width}>
         {editMode && <div className="mb-4 flex flex-wrap items-center gap-1 border-b border-edit/30 pb-2 text-foreground"><span className="mr-auto flex items-center gap-1 text-xs"><Columns3 className="size-4" /> Blok {index + 1}</span><Select value={String(c.width)} onValueChange={(v) => update(c.id, { width: Number(v) as Column["width"] })}><SelectTrigger aria-label={`Širina bloka ${index + 1}`} className="w-24 bg-background"><SelectValue /></SelectTrigger><SelectContent>{[25, 50, 75, 100].map((w) => <SelectItem key={w} value={String(w)}>{w}%</SelectItem>)}</SelectContent></Select><Button variant="outline" size="icon-sm" title="Razmaci bloka" aria-label="Razmaci bloka" onClick={() => { setSelected({ column: c.id }); setPadding(c.padding); setGap(c.gap); }}><Settings2 /></Button><Button variant="outline" size="icon-sm" title="Obriši unutrašnji blok" aria-label="Obriši unutrašnji blok" onClick={() => { if (confirm("Obrisati blok sa svim sadržajem?")) persist(columns.filter((col) => col.id !== c.id)); }}><Trash2 /></Button></div>}
@@ -90,6 +91,7 @@ export function FlexibleSection({ id, renderGallery }: { id: string; renderGalle
       </div>)}
     </div>
     {editMode && <Button variant="outline" className="mt-6" onClick={() => persist([...columns, { id: uid(), width: 100, padding: 16, gap: 16, elements: [] }])}><Plus />Dodaj unutrašnji blok</Button>}
+    </fieldset>
     <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}><DialogContent><DialogHeader><DialogTitle>{selected?.element ? "Razmaci objekta" : "Razmaci bloka"}</DialogTitle></DialogHeader><NumberSetting label="Unutrašnji razmak" value={padding} onChange={setPadding} />{selected?.element ? <NumberSetting label="Margina iznad objekta" value={margin} onChange={setMargin} /> : <NumberSetting label="Razmak između objekata" value={gap} onChange={setGap} />}<DialogFooter><Button variant="outline" onClick={() => setSelected(null)}>Otkaži</Button><Button disabled={busy} onClick={async () => { if (!selected) return; setBusy(true); const next = columns.map((c) => c.id !== selected.column ? c : selected.element ? { ...c, elements: c.elements.map((el) => el.id === selected.element ? { ...el, padding, margin } : el) } : { ...c, padding, gap }); if (await persist(next)) setSelected(null); setBusy(false); }}>Sačuvaj</Button></DialogFooter></DialogContent></Dialog>
   </section>;
 }
