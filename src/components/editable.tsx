@@ -96,12 +96,11 @@ export function EditableText({
   );
 }
 
-async function fileToDataUrl(file: File, maxW = 1600): Promise<string> {
+async function fileToDataUrl(file: File): Promise<string> {
   const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, maxW / bitmap.width);
   const canvas = document.createElement("canvas");
-  canvas.width = Math.round(bitmap.width * scale);
-  canvas.height = Math.round(bitmap.height * scale);
+  canvas.width = bitmap.width;
+  canvas.height = bitmap.height;
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Slika se ne može obraditi");
   context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
@@ -148,11 +147,11 @@ export function EditableImage({
   };
 
   return (
-    <div className={cn("relative", wrapperClassName)}>
+    <div className={cn("relative min-w-0 max-w-full", wrapperClassName)}>
       {img(k) || fallback ? (
-        <img src={img(k) || fallback} alt={alt} className={className} loading={eager ? "eager" : "lazy"} />
+        <img src={img(k) || fallback} alt={alt} className={cn("builder-image", className)} loading={eager ? "eager" : "lazy"} />
       ) : (
-        <div className={cn(className, "flex items-center justify-center bg-muted text-muted-foreground")}>
+        <div className={cn(className, "flex min-h-32 items-center justify-center bg-muted text-muted-foreground")}>
           {editMode ? "Dodaj sliku" : ""}
         </div>
       )}
