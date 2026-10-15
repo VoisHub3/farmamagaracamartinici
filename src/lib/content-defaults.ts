@@ -12,6 +12,7 @@ export const defaultImages: Record<string, string> = {
 
 export const defaultTexts: Record<string, { sr: string; en: string }> = {
   "brand.name": { sr: "Farma Magarica", en: "Donkey Farm" },
+  "nav.home": { sr: "Početna", en: "Home" },
   "nav.story": { sr: "Naša priča", en: "Our story" },
   "nav.milk": { sr: "Mlijeko", en: "Milk" },
   "nav.contact": { sr: "Kontakt", en: "Contact" },
