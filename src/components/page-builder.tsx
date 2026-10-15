@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import logo from "@/assets/donkey-logo.png";
+import { FlexibleSection, SectionSettingsButton, sectionStyle, type SectionSettings } from "@/components/section-editor";
 
 export type Block = { id: string; type: string };
 export type PageInfo = { slug: string };
@@ -28,6 +29,7 @@ const BUILTIN: Record<string, string> = {
   contact: "Kontakt",
 };
 const CUSTOM: Record<string, string> = {
+  section: "Sekcija 100% sa blokovima",
   text: "Tekst",
   textImage: "Tekst sa slikom",
   gallery: "Galerija slika",
@@ -43,7 +45,10 @@ async function fileToDataUrl(file: File, maxW = 1600): Promise<string> {
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(bitmap.width * scale);
   canvas.height = Math.round(bitmap.height * scale);
-  canvas.getContext("2d")!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Slika se ne može obraditi");
+  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
   return canvas.toDataURL("image/jpeg", 0.8);
 }
 
@@ -64,7 +69,8 @@ export function SitePage({ slug }: { slug: string }) {
     if (from === to || to < 0 || to >= blocks.length) return;
     const next = [...blocks];
     const [b] = next.splice(from, 1);
-    next.splice(to, 0, b!);
+    if (!b) return;
+    next.splice(to, 0, b);
     persist(next);
   };
   const remove = (i: number) => {
@@ -85,7 +91,8 @@ export function SitePage({ slug }: { slug: string }) {
       {blocks.map((b, i) => (
         <div
           key={b.id}
-          className={cn("relative", editMode && "group/block", dragOver === i && dragFrom !== i && "ring-4 ring-edit ring-inset")}
+          className={cn("relative", json<SectionSettings | null>(`section-style:${b.id}`, null) && b.type !== "section" && "builder-configured", editMode && "group/block", dragOver === i && dragFrom !== i && "ring-4 ring-edit ring-inset")}
+          style={(() => { const settings = json<SectionSettings | null>(`section-style:${b.id}`, null); return settings && b.type !== "section" ? sectionStyle(settings) : undefined; })()}
           onDragOver={(e) => {
             if (dragFrom === null) return;
             e.preventDefault();
@@ -116,6 +123,7 @@ export function SitePage({ slug }: { slug: string }) {
               </span>
               <IconBtn title="Pomjeri gore" onClick={() => move(i, i - 1)} disabled={i === 0}><ArrowUp className="size-4" /></IconBtn>
               <IconBtn title="Pomjeri dolje" onClick={() => move(i, i + 1)} disabled={i === blocks.length - 1}><ArrowDown className="size-4" /></IconBtn>
+              <SectionSettingsButton id={b.id} />
               <IconBtn title="Obriši blok" onClick={() => remove(i)}><Trash2 className="size-4" /></IconBtn>
             </div>
           )}
@@ -297,6 +305,7 @@ function PagesDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: 
 
 function RenderBlock({ block }: { block: Block }) {
   switch (block.type) {
+    case "section": return <FlexibleSection id={block.id} renderGallery={(id) => <GalleryBlock id={id} embedded />} />;
     case "hero": return <HeroBlock />;
     case "story": return <StoryBlock />;
     case "milk": return <MilkBlock />;
@@ -438,7 +447,7 @@ function TextImageBlock({ id }: { id: string }) {
   );
 }
 
-function GalleryBlock({ id }: { id: string }) {
+function GalleryBlock({ id, embedded = false }: { id: string; embedded?: boolean }) {
   const { json, img, save, editMode } = useSite();
   const listKey = `gal:${id}`;
   const items = json<string[]>(listKey, []);
@@ -472,9 +481,9 @@ function GalleryBlock({ id }: { id: string }) {
   };
 
   return (
-    <section className="mx-auto max-w-6xl px-6 py-20">
-      <EditableText k={`blk.${id}.title`} as="h2" className="text-center text-4xl font-semibold" />
-      <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-3">
+    <section className={embedded ? "min-w-0" : "mx-auto max-w-6xl px-6 py-20"}>
+      {!embedded && <EditableText k={`blk.${id}.title`} as="h2" className="text-center text-4xl font-semibold" />}
+      <div className={cn("grid grid-cols-2 gap-4", !embedded && "mt-10 md:grid-cols-3")}>
         {items.map((iid) => (
           <div key={iid} className="group relative overflow-hidden rounded-2xl">
             <button type="button" className="block w-full" onClick={() => setView(img(`gal.${id}.${iid}`))}>

@@ -15,3 +15,4 @@
 - Admin = `user_roles` row; first signup becomes admin via trigger. Why: single-owner site.
 - Chatbot knowledge is one row in `knowledge_base`, injected whole into the system prompt in `src/lib/ai/chat.server.ts`. Why: single document, no retrieval needed.
 - Page layouts are JSON block lists in site_content (`layout:<slug>`, page list in `pages`, gallery lists in `gal:<id>`), rendered by src/components/page-builder.tsx. Why: reuse the single content table for the page builder.
+- Flexible sections store nested columns/elements under `section:<id>` and appearance under `section-style:<id>` / `text-style:<key>`; the section editor renders a four-track grid that stacks on mobile. Why: extend existing content overrides without altering legacy layouts or requiring schema changes.
