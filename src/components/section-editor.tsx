@@ -74,7 +74,7 @@ export function FlexibleSection({ id, renderGallery }: { id: string; renderGalle
     if (type === "title" || type === "text") { extra[`t:element.${eid}:sr`] = type === "title" ? "Novi naslov" : "Novi tekst"; extra[`t:element.${eid}:en`] = type === "title" ? "New title" : "New text"; }
     persist(columns.map((col) => col.id === c.id ? { ...col, elements: [...col.elements, { id: eid, type, margin: 0, padding: 0 }] } : col), extra);
   };
-  const reorder = (items: SectionElement[], index: number, direction: number) => { const next = [...items]; const target = index + direction; if (target < 0 || target >= next.length) return items; [next[index], next[target]] = [next[target], next[index]]; return next; };
+  const reorder = (items: SectionElement[], index: number, direction: number) => { const next = [...items]; const target = index + direction; const current = next[index]; const other = next[target]; if (!current || !other) return items; next[index] = other; next[target] = current; return next; };
   return <section className="builder-section w-full" data-section-id={id} style={sectionStyle(settings)}>
     <div className="grid min-w-0 grid-cols-1 md:grid-cols-4" style={{ gap: settings.gap }}>
       {columns.map((c, index) => <div key={c.id} className={`min-w-0 ${widths[c.width]} ${editMode ? "border border-dashed border-edit" : ""}`} style={{ padding: c.padding }} data-column-width={c.width}>
