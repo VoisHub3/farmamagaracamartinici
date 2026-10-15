@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
@@ -181,12 +181,37 @@ function SiteHeader({ overlay }: { overlay: boolean }) {
   const { lang, setLang, editMode, save, json } = useSite();
   const pages = json<PageInfo[]>("pages", []);
   const [pagesOpen, setPagesOpen] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+  const [stuck, setStuck] = useState(false);
+  useEffect(() => {
+    if (!overlay) return;
+    const onScroll = () => {
+      const hero = document.querySelector("[data-hero]") as HTMLElement | null;
+      const h = headerRef.current?.offsetHeight ?? 72;
+      setStuck(hero ? hero.getBoundingClientRect().bottom <= h : window.scrollY > h);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [overlay]);
+  const solid = !overlay || stuck;
   const removeBrand = async () => {
     await save({ "t:brand.name:sr": "", "t:brand.name:en": "" });
     toast.success("Tekst pored logoa obrisan");
   };
   return (
-    <header className={cn("inset-x-0 top-0 z-30", overlay ? "absolute text-hero-foreground" : "relative border-b text-foreground")}>
+    <header
+      ref={headerRef}
+      className={cn(
+        "inset-x-0 top-0 z-50 transition-[background-color,color,box-shadow,border-color] duration-300",
+        overlay ? (stuck ? "fixed" : "absolute") : "sticky",
+        solid ? "border-b border-border/70 bg-background/85 text-foreground shadow-sm backdrop-blur-md" : "text-hero-foreground",
+      )}
+    >
       <nav className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-5">
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
@@ -218,12 +243,12 @@ function SiteHeader({ overlay }: { overlay: boolean }) {
               <FilePlus2 className="size-3.5" /> Stranice
             </button>
           )}
-          <div className={cn("flex rounded-full border p-0.5 text-xs", overlay ? "border-hero-foreground/40" : "border-border")}>
+          <div className={cn("flex rounded-full border p-0.5 text-xs", solid ? "border-border" : "border-hero-foreground/40")}>
             {(["sr", "en"] as const).map((l) => (
               <button
                 key={l}
                 onClick={() => setLang(l)}
-                className={cn("rounded-full px-3 py-1 uppercase", lang === l && (overlay ? "bg-hero-foreground text-foreground" : "bg-foreground text-background"))}
+                className={cn("rounded-full px-3 py-1 uppercase", lang === l && (solid ? "bg-foreground text-background" : "bg-hero-foreground text-foreground"))}
               >
                 {l === "sr" ? "ME" : "EN"}
               </button>
@@ -320,7 +345,7 @@ function RenderBlock({ block }: { block: Block }) {
 function HeroBlock() {
   const { setChatOpen } = useSite();
   return (
-    <section className="relative grid bg-foreground">
+    <section data-hero className="relative grid bg-foreground">
       <EditableImage k="hero" alt="Magarci na pašnjaku" eager wrapperClassName="col-start-1 row-start-1" className="mx-auto" buttonClassName="z-30 top-24" />
       <div className="pointer-events-none absolute inset-0 bg-hero-overlay" />
       <div className="relative z-10 col-start-1 row-start-1 mx-auto w-full max-w-6xl self-end px-6 pt-40 pb-20 text-hero-foreground">
@@ -338,7 +363,7 @@ function HeroBlock() {
 
 function StoryBlock() {
   return (
-    <section id="prica" className="mx-auto grid max-w-6xl gap-12 px-6 py-24 md:grid-cols-2 md:items-center">
+    <section id="prica" className="mx-auto grid max-w-6xl scroll-mt-24 gap-12 px-6 py-24 md:grid-cols-2 md:items-center">
       <EditableImage k="story" alt="Ždrijebe na farmi" />
       <div>
         <EditableText k="story.eyebrow" as="p" className="text-sm font-medium uppercase tracking-[0.2em] text-primary" />
@@ -360,7 +385,7 @@ function StoryBlock() {
 
 function MilkBlock() {
   return (
-    <section id="mlijeko" className="bg-olive py-24 text-olive-foreground">
+    <section id="mlijeko" className="scroll-mt-24 bg-olive py-24 text-olive-foreground">
       <div className="mx-auto grid max-w-6xl gap-12 px-6 md:grid-cols-2 md:items-center">
         <div>
           <EditableText k="milk.eyebrow" as="p" className="text-sm uppercase tracking-[0.2em] opacity-80" />
@@ -398,7 +423,7 @@ function ChatBlock() {
 
 function ContactBlock() {
   return (
-    <section id="kontakt" className="bg-secondary py-24">
+    <section id="kontakt" className="scroll-mt-24 bg-secondary py-24">
       <div className="mx-auto grid max-w-6xl gap-12 px-6 md:grid-cols-2">
         <div>
           <EditableText k="contact.eyebrow" as="p" className="text-sm font-medium uppercase tracking-[0.2em] text-primary" />
