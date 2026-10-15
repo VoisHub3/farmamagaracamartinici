@@ -347,8 +347,8 @@ function RenderBlock({ block }: { block: Block }) {
 function HeroBlock() {
   const { setChatOpen } = useSite();
   return (
-    <section data-hero className="relative grid bg-foreground">
-      <EditableImage k="hero" alt="Magarci na pašnjaku" eager wrapperClassName="col-start-1 row-start-1" className="mx-auto" buttonClassName="z-30 top-24" />
+    <section data-hero className="relative grid grid-cols-[100%] bg-foreground">
+      <EditableImage k="hero" alt="Magarci na pašnjaku" eager wrapperClassName="col-start-1 row-start-1 w-full" className="builder-image-full" buttonClassName="z-30 top-24" />
       <div className="pointer-events-none absolute inset-0 bg-hero-overlay" />
       <div className="relative z-10 col-start-1 row-start-1 mx-auto w-full max-w-6xl self-end px-6 pt-40 pb-20 text-hero-foreground">
         <EditableText k="hero.eyebrow" as="p" className="mb-4 text-sm uppercase tracking-[0.2em] opacity-90" />

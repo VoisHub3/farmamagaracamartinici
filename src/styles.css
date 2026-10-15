@@ -136,6 +136,13 @@
   max-width: 100%;
   object-fit: contain;
 }
+/* Image that always spans the full width of its block, keeping the uploaded proportions. */
+.builder-image-full {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+}
 .builder-section {
   background: var(--section-background);
   color: var(--section-foreground);
@@ -166,6 +173,11 @@
   padding-bottom: var(--section-padding-y);
   padding-left: min(var(--section-padding-x), 8%);
   padding-right: min(var(--section-padding-x), 8%);
+}
+/* The main image always spans the full width of the page; only its vertical spacing is configurable. */
+.builder-configured > [data-hero] {
+  padding-left: 0;
+  padding-right: 0;
 }
 .builder-configured > section .text-muted-foreground,
 .builder-configured > section .text-primary {
