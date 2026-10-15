@@ -6,3 +6,4 @@
 - [x] Add full-width sections with 25/50/75/100% nested blocks and title/text/image/gallery elements.
 - [x] Add section background, font size, margins and padding controls.
 - [x] Verify editing, saving, reloading and mobile rendering.
+- [x] Make the site menu sticky: transparent over the main image, solid cream once scrolled past it; verified fixed/sticky positioning, anchor targets clearing the bar, and no layout shift.
