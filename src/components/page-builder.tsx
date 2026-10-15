@@ -64,7 +64,7 @@ export function SitePage({ slug }: { slug: string }) {
     if (from === to || to < 0 || to >= blocks.length) return;
     const next = [...blocks];
     const [b] = next.splice(from, 1);
-    next.splice(to, 0, b);
+    next.splice(to, 0, b!);
     persist(next);
   };
   const remove = (i: number) => {
@@ -243,8 +243,8 @@ function PagesDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: 
 
   const create = async () => {
     const slug = slugify(sr || en);
-    if (!slug) return toast.error("Upišite naziv stranice");
-    if (pages.some((p) => p.slug === slug)) return toast.error("Stranica s tim nazivom već postoji");
+    if (!slug) { toast.error("Upišite naziv stranice"); return; }
+    if (pages.some((p) => p.slug === slug)) { toast.error("Stranica s tim nazivom već postoji"); return; }
     setBusy(true);
     try {
       await save({
