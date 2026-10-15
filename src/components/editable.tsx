@@ -1,4 +1,4 @@
-import { useRef, useState, type ElementType } from "react";
+import { useRef, useState, type ElementType, type CSSProperties } from "react";
 import { toast } from "sonner";
 import { ImageUp, Loader2 } from "lucide-react";
 import { useSite } from "@/lib/site-content";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 export function EditableText({
   k,
@@ -17,11 +18,15 @@ export function EditableText({
   as?: ElementType;
   className?: string;
 }) {
-  const { t, textFor, editMode, save } = useSite();
+  const { t, textFor, editMode, save, json } = useSite();
   const [open, setOpen] = useState(false);
   const [sr, setSr] = useState("");
   const [en, setEn] = useState("");
   const [saving, setSaving] = useState(false);
+  const [fontSize, setFontSize] = useState(0);
+  const [marginTop, setMarginTop] = useState(0);
+  const [padding, setPadding] = useState(0);
+  const appearance = json<{ fontSize?: number; marginTop?: number; padding?: number }>(`text-style:${k}`, {});
 
   const openEditor = (e: React.MouseEvent) => {
     if (!editMode) return;
@@ -29,13 +34,16 @@ export function EditableText({
     e.stopPropagation();
     setSr(textFor(k, "sr"));
     setEn(textFor(k, "en"));
+    setFontSize(appearance.fontSize ?? 0);
+    setMarginTop(appearance.marginTop ?? 0);
+    setPadding(appearance.padding ?? 0);
     setOpen(true);
   };
 
   const onSave = async () => {
     setSaving(true);
     try {
-      await save({ [`t:${k}:sr`]: sr, [`t:${k}:en`]: en });
+      await save({ [`t:${k}:sr`]: sr, [`t:${k}:en`]: en, [`text-style:${k}`]: JSON.stringify({ fontSize, marginTop, padding }) });
       toast.success("Sačuvano");
       setOpen(false);
     } catch (err) {
@@ -48,13 +56,13 @@ export function EditableText({
   return (
     <>
       {t(k) || editMode ? (
-        <Tag className={cn(className, editMode && "editable-outline")} onClick={openEditor}>
+        <Tag className={cn(className, appearance.fontSize && "builder-text-size", editMode && "editable-outline")} style={{ "--text-size": appearance.fontSize ? `${appearance.fontSize}px` : undefined, ...(appearance.marginTop !== undefined ? { marginTop: appearance.marginTop } : {}), ...(appearance.padding !== undefined ? { padding: appearance.padding } : {}) } as CSSProperties} onClick={openEditor}>
           {t(k) || <span className="opacity-50">✎ upiši tekst…</span>}
         </Tag>
       ) : null}
       {editMode && (
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent>
+          <DialogContent className="max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Izmijeni tekst</DialogTitle>
             </DialogHeader>
@@ -66,6 +74,11 @@ export function EditableText({
               <div className="space-y-2">
                 <Label>English</Label>
                 <Textarea rows={4} value={en} onChange={(e) => setEn(e.target.value)} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Label className="flex flex-col gap-2">Veličina slova (px, 0 = osnovna)<Input aria-label="Veličina slova" type="number" min={0} max={120} value={fontSize} onChange={(e) => setFontSize(Math.min(120, Math.max(0, Number(e.target.value))))} /></Label>
+                <Label className="flex flex-col gap-2">Margina iznad (px)<Input type="number" min={0} max={240} value={marginTop} onChange={(e) => setMarginTop(Math.min(240, Math.max(0, Number(e.target.value))))} /></Label>
+                <Label className="flex flex-col gap-2">Unutrašnji razmak (px)<Input type="number" min={0} max={120} value={padding} onChange={(e) => setPadding(Math.min(120, Math.max(0, Number(e.target.value))))} /></Label>
               </div>
             </div>
             <DialogFooter>
@@ -89,7 +102,10 @@ async function fileToDataUrl(file: File, maxW = 1600): Promise<string> {
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(bitmap.width * scale);
   canvas.height = Math.round(bitmap.height * scale);
-  canvas.getContext("2d")!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Slika se ne može obraditi");
+  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
   return canvas.toDataURL("image/jpeg", 0.82);
 }
 
