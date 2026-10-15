@@ -211,7 +211,7 @@ function SiteHeader({ overlay }: { overlay: boolean }) {
       className={cn(
         "inset-x-0 top-0 z-50 transition-[background-color,color,box-shadow,border-color] duration-300",
         overlay ? (scrolled ? "fixed" : "absolute") : "sticky",
-        solid ? "border-b border-border/70 bg-background/95 text-foreground shadow-sm backdrop-blur-md" : "text-hero-foreground",
+        solid ? "border-b border-border/70 bg-background text-foreground shadow-sm" : "text-hero-foreground",
       )}
     >
       <nav className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-5">
