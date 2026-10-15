@@ -35,6 +35,8 @@
   --color-ring: var(--ring);
   --color-ring-offset-background: var(--background);
   --color-hero-foreground: var(--hero-foreground);
+  --color-menu-background: var(--menu-background);
+  --color-menu-foreground: var(--menu-foreground);
   --color-olive: var(--olive);
   --color-olive-foreground: var(--olive-foreground);
   --color-edit: var(--edit);
@@ -77,6 +79,8 @@
   --input: oklch(0.88 0.025 75);
   --ring: oklch(0.58 0.14 42);
   --hero-foreground: oklch(0.985 0.01 85);
+  --menu-background: #ffffff;
+  --menu-foreground: #000000;
   --olive: oklch(0.42 0.06 120);
   --olive-foreground: oklch(0.97 0.015 90);
   --edit: oklch(0.62 0.17 245);
@@ -174,10 +178,14 @@
   padding-left: min(var(--section-padding-x), 8%);
   padding-right: min(var(--section-padding-x), 8%);
 }
-/* The main image always spans the full width of the page; only its vertical spacing is configurable. */
+/* The header image defines the section bounds; editor spacing cannot add background bands. */
 .builder-configured > [data-hero] {
-  padding-left: 0;
-  padding-right: 0;
+  padding: 0;
+}
+.builder-configured:has(> [data-hero]) {
+  margin-top: 0;
+  margin-bottom: 0;
+  background: transparent;
 }
 .builder-configured > section .text-muted-foreground,
 .builder-configured > section .text-primary {

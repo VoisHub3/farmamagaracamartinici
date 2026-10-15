@@ -183,14 +183,9 @@ function SiteHeader({ overlay }: { overlay: boolean }) {
   const [pagesOpen, setPagesOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
   const [scrolled, setScrolled] = useState(false);
-  const [pastHero, setPastHero] = useState(false);
   useEffect(() => {
-    if (!overlay) return;
     const onScroll = () => {
-      const hero = document.querySelector("[data-hero]") as HTMLElement | null;
-      const h = headerRef.current?.offsetHeight ?? 72;
       setScrolled(window.scrollY > 8);
-      setPastHero(hero ? hero.getBoundingClientRect().bottom <= h : window.scrollY > h);
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -200,7 +195,7 @@ function SiteHeader({ overlay }: { overlay: boolean }) {
       window.removeEventListener("resize", onScroll);
     };
   }, [overlay]);
-  const solid = !overlay || pastHero;
+  const solid = !overlay || scrolled;
   const removeBrand = async () => {
     await save({ "t:brand.name:sr": "", "t:brand.name:en": "" });
     toast.success("Tekst pored logoa obrisan");
@@ -211,13 +206,19 @@ function SiteHeader({ overlay }: { overlay: boolean }) {
       className={cn(
         "inset-x-0 top-0 z-50 transition-[background-color,color,box-shadow,border-color] duration-300",
         overlay ? (scrolled ? "fixed" : "absolute") : "sticky",
-        solid ? "border-b border-border/70 bg-background text-foreground shadow-sm" : "text-hero-foreground",
+        solid ? "border-b border-border/70 bg-menu-background text-menu-foreground shadow-sm" : "text-hero-foreground",
       )}
     >
       <nav className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-5">
         <div className="flex items-center gap-2">
+          {editMode ? (
+            <EditableImage k="logo" alt="Logo" fallback={logo} compact eager wrapperClassName="w-10 shrink-0" />
+          ) : (
+            <Link to="/" aria-label="Početna stranica" className="w-10 shrink-0">
+              <EditableImage k="logo" alt="Logo" fallback={logo} eager />
+            </Link>
+          )}
           <Link to="/" className="flex items-center gap-2">
-            <EditableImage k="logo" alt="Logo" fallback={logo} compact wrapperClassName="w-10 shrink-0" />
             <EditableText k="brand.name" className="font-display text-xl font-semibold" />
           </Link>
           {editMode && (
@@ -250,7 +251,7 @@ function SiteHeader({ overlay }: { overlay: boolean }) {
               <button
                 key={l}
                 onClick={() => setLang(l)}
-                className={cn("rounded-full px-3 py-1 uppercase", lang === l && (solid ? "bg-foreground text-background" : "bg-hero-foreground text-foreground"))}
+                className={cn("rounded-full px-3 py-1 uppercase", lang === l && (solid ? "bg-menu-foreground text-menu-background" : "bg-hero-foreground text-foreground"))}
               >
                 {l === "sr" ? "ME" : "EN"}
               </button>
@@ -347,16 +348,16 @@ function RenderBlock({ block }: { block: Block }) {
 function HeroBlock() {
   const { setChatOpen } = useSite();
   return (
-    <section data-hero className="relative grid grid-cols-[100%] bg-foreground">
+    <section data-hero className="relative">
       <EditableImage k="hero" alt="Magarci na pašnjaku" eager wrapperClassName="col-start-1 row-start-1 w-full" className="builder-image-full" buttonClassName="z-30 top-24" />
       <div className="pointer-events-none absolute inset-0 bg-hero-overlay" />
-      <div className="relative z-10 col-start-1 row-start-1 mx-auto w-full max-w-6xl self-end px-6 pt-40 pb-20 text-hero-foreground">
-        <EditableText k="hero.eyebrow" as="p" className="mb-4 text-sm uppercase tracking-[0.2em] opacity-90" />
-        <EditableText k="hero.title" as="h1" className="max-w-3xl text-5xl font-semibold leading-[1.05] sm:text-7xl" />
-        <EditableText k="hero.subtitle" as="p" className="mt-6 max-w-xl text-lg opacity-90" />
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Button variant="hero" size="lg" onClick={() => setChatOpen(true)}><EditableText k="hero.cta" /></Button>
-          <Button variant="heroGhost" size="lg" asChild><a href="#prica"><EditableText k="hero.cta2" /></a></Button>
+      <div className="absolute inset-x-0 bottom-0 z-10 mx-auto w-full max-w-6xl px-6 pb-4 text-hero-foreground sm:pb-10 lg:pb-20">
+        <EditableText k="hero.eyebrow" as="p" className="mb-2 text-xs uppercase opacity-90 sm:mb-4 sm:text-sm" />
+        <EditableText k="hero.title" as="h1" className="max-w-3xl text-xl font-semibold leading-[1.05] sm:text-5xl lg:text-7xl" />
+        <EditableText k="hero.subtitle" as="p" className="mt-2 max-w-xl text-xs opacity-90 sm:mt-6 sm:text-lg" />
+        <div className="mt-3 flex flex-wrap gap-2 sm:mt-8 sm:gap-3">
+          <Button variant="hero" size="lg" className="h-8 px-3 text-xs sm:h-12 sm:px-8 sm:text-base" onClick={() => setChatOpen(true)}><EditableText k="hero.cta" /></Button>
+          <Button variant="heroGhost" size="lg" className="h-8 px-3 text-xs sm:h-12 sm:px-8 sm:text-base" asChild><a href="#prica"><EditableText k="hero.cta2" /></a></Button>
         </div>
       </div>
     </section>
