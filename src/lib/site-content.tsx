@@ -20,6 +20,7 @@ type Ctx = {
   t: (key: string) => string;
   textFor: (key: string, lang: Lang) => string;
   img: (key: string) => string;
+  json: <T,>(key: string, fallback: T) => T;
   isAdmin: boolean;
   editMode: boolean;
   setEditMode: (v: boolean) => void;
@@ -71,11 +72,17 @@ export function SiteProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const textFor = useCallback(
-    (key: string, l: Lang) => content[`t:${key}:${l}`] ?? defaultTexts[key]?.[l] ?? key,
+    (key: string, l: Lang) => content[`t:${key}:${l}`] ?? defaultTexts[key]?.[l] ?? "",
     [content],
   );
   const t = useCallback((key: string) => textFor(key, lang), [textFor, lang]);
   const img = useCallback((key: string) => content[`img:${key}`] || defaultImages[key] || "", [content]);
+
+  const json = useCallback(<T,>(key: string, fallback: T): T => {
+    const raw = content[key];
+    if (!raw) return fallback;
+    try { return JSON.parse(raw) as T; } catch { return fallback; }
+  }, [content]);
 
   const save = async (entries: Record<string, string>) => {
     const rows = Object.entries(entries).map(([key, value]) => ({ key, value, updated_at: new Date().toISOString() }));
@@ -86,7 +93,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
 
   return (
     <SiteCtx.Provider
-      value={{ lang, setLang, t, textFor, img, isAdmin, editMode: isAdmin && editMode, setEditMode, save, chatOpen, setChatOpen }}
+      value={{ lang, setLang, t, textFor, img, json, isAdmin, editMode: isAdmin && editMode, setEditMode, save, chatOpen, setChatOpen }}
     >
       {children}
     </SiteCtx.Provider>

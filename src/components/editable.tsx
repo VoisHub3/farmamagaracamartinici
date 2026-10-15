@@ -47,9 +47,11 @@ export function EditableText({
 
   return (
     <>
-      <Tag className={cn(className, editMode && "editable-outline")} onClick={openEditor}>
-        {t(k)}
-      </Tag>
+      {t(k) || editMode ? (
+        <Tag className={cn(className, editMode && "editable-outline")} onClick={openEditor}>
+          {t(k) || <span className="opacity-50">✎ upiši tekst…</span>}
+        </Tag>
+      ) : null}
       {editMode && (
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogContent>
@@ -98,7 +100,11 @@ export function EditableImage({
   wrapperClassName,
   buttonClassName,
   eager,
+  compact,
+  fallback,
 }: {
+  compact?: boolean;
+  fallback?: string;
   k: string;
   alt: string;
   className?: string;
@@ -127,20 +133,28 @@ export function EditableImage({
 
   return (
     <div className={cn("relative", wrapperClassName)}>
-      <img src={img(k)} alt={alt} className={className} loading={eager ? "eager" : "lazy"} />
+      {img(k) || fallback ? (
+        <img src={img(k) || fallback} alt={alt} className={className} loading={eager ? "eager" : "lazy"} />
+      ) : (
+        <div className={cn(className, "flex items-center justify-center bg-muted text-muted-foreground")}>
+          {editMode ? "Dodaj sliku" : ""}
+        </div>
+      )}
       {editMode && (
         <>
           <input ref={input} type="file" accept="image/*" hidden onChange={(e) => onFile(e.target.files?.[0])} />
           <button
             type="button"
-            onClick={() => input.current?.click()}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); input.current?.click(); }}
+            title="Promijeni sliku"
             className={cn(
+              compact && "!-right-2 !-top-2 !p-1.5",
               "absolute right-4 top-4 z-20 inline-flex items-center gap-2 rounded-full bg-edit px-4 py-2 text-sm font-medium text-edit-foreground shadow-lg",
               buttonClassName,
             )}
           >
             {busy ? <Loader2 className="size-4 animate-spin" /> : <ImageUp className="size-4" />}
-            Promijeni sliku
+            {!compact && "Promijeni sliku"}
           </button>
         </>
       )}
