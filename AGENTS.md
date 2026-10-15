@@ -14,3 +14,4 @@
 - Images are stored as compressed data URLs in the database because the workspace blocks public storage buckets.
 - Admin = `user_roles` row; first signup becomes admin via trigger. Why: single-owner site.
 - Chatbot knowledge is one row in `knowledge_base`, injected whole into the system prompt in `src/lib/ai/chat.server.ts`. Why: single document, no retrieval needed.
+- Page layouts are JSON block lists in site_content (`layout:<slug>`, page list in `pages`, gallery lists in `gal:<id>`), rendered by src/components/page-builder.tsx. Why: reuse the single content table for the page builder.
