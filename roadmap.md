@@ -7,3 +7,4 @@
 - [x] Add section background, font size, margins and padding controls.
 - [x] Verify editing, saving, reloading and mobile rendering.
 - [x] Make the site menu sticky: transparent over the main image, solid cream once scrolled past it; verified fixed/sticky positioning, anchor targets clearing the bar, and no layout shift.
+- [x] Make the header image span 100% of the page width with proportions kept; verified at 1158, 1280 and 390 CSS px.
