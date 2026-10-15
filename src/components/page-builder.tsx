@@ -182,13 +182,15 @@ function SiteHeader({ overlay }: { overlay: boolean }) {
   const pages = json<PageInfo[]>("pages", []);
   const [pagesOpen, setPagesOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
-  const [stuck, setStuck] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [pastHero, setPastHero] = useState(false);
   useEffect(() => {
     if (!overlay) return;
     const onScroll = () => {
       const hero = document.querySelector("[data-hero]") as HTMLElement | null;
       const h = headerRef.current?.offsetHeight ?? 72;
-      setStuck(hero ? hero.getBoundingClientRect().bottom <= h : window.scrollY > h);
+      setScrolled(window.scrollY > 8);
+      setPastHero(hero ? hero.getBoundingClientRect().bottom <= h : window.scrollY > h);
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -198,7 +200,7 @@ function SiteHeader({ overlay }: { overlay: boolean }) {
       window.removeEventListener("resize", onScroll);
     };
   }, [overlay]);
-  const solid = !overlay || stuck;
+  const solid = !overlay || pastHero;
   const removeBrand = async () => {
     await save({ "t:brand.name:sr": "", "t:brand.name:en": "" });
     toast.success("Tekst pored logoa obrisan");
