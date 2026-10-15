@@ -129,6 +129,13 @@
   }
 }
 
+.builder-image {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
 .builder-section {
   background: var(--section-background);
   color: var(--section-foreground);

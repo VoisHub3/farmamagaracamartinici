@@ -1,4 +1,5 @@
 # Tasks
+- [ ] Preserve uploaded image dimensions and proportions across blocks, galleries, logos and the main image; verify replacement and reload.
 - [x] Add side-by-side block creation and centered partial rows.
 - [x] Add configurable button actions and social links inside blocks.
 - [x] Verify saving, reloading, click actions and narrow-screen layout.

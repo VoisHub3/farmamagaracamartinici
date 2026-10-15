@@ -39,12 +39,11 @@ const HOME_DEFAULT: Block[] = Object.keys(BUILTIN).map((t) => ({ id: t, type: t 
 const newId = () => Math.random().toString(36).slice(2, 10);
 export const layoutKey = (slug: string) => `layout:${slug}`;
 
-async function fileToDataUrl(file: File, maxW = 1600): Promise<string> {
+async function fileToDataUrl(file: File): Promise<string> {
   const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, maxW / bitmap.width);
   const canvas = document.createElement("canvas");
-  canvas.width = Math.round(bitmap.width * scale);
-  canvas.height = Math.round(bitmap.height * scale);
+  canvas.width = bitmap.width;
+  canvas.height = bitmap.height;
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Slika se ne može obraditi");
   context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
@@ -191,7 +190,7 @@ function SiteHeader({ overlay }: { overlay: boolean }) {
       <nav className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-5">
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
-            <EditableImage k="logo" alt="Logo" fallback={logo} compact wrapperClassName="size-10 shrink-0" className="size-10 rounded-full bg-card object-contain p-1" />
+            <EditableImage k="logo" alt="Logo" fallback={logo} compact wrapperClassName="w-10 shrink-0" />
             <EditableText k="brand.name" className="font-display text-xl font-semibold" />
           </Link>
           {editMode && (
@@ -321,10 +320,10 @@ function RenderBlock({ block }: { block: Block }) {
 function HeroBlock() {
   const { setChatOpen } = useSite();
   return (
-    <section className="relative flex min-h-[92vh] items-end overflow-hidden">
-      <EditableImage k="hero" alt="Magarci na pašnjaku" eager wrapperClassName="absolute inset-0" className="size-full object-cover" buttonClassName="z-30 top-24" />
+    <section className="relative grid bg-foreground">
+      <EditableImage k="hero" alt="Magarci na pašnjaku" eager wrapperClassName="col-start-1 row-start-1" className="mx-auto" buttonClassName="z-30 top-24" />
       <div className="pointer-events-none absolute inset-0 bg-hero-overlay" />
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-6 pb-20 text-hero-foreground">
+      <div className="relative z-10 col-start-1 row-start-1 mx-auto w-full max-w-6xl self-end px-6 pt-40 pb-20 text-hero-foreground">
         <EditableText k="hero.eyebrow" as="p" className="mb-4 text-sm uppercase tracking-[0.2em] opacity-90" />
         <EditableText k="hero.title" as="h1" className="max-w-3xl text-5xl font-semibold leading-[1.05] sm:text-7xl" />
         <EditableText k="hero.subtitle" as="p" className="mt-6 max-w-xl text-lg opacity-90" />
@@ -340,7 +339,7 @@ function HeroBlock() {
 function StoryBlock() {
   return (
     <section id="prica" className="mx-auto grid max-w-6xl gap-12 px-6 py-24 md:grid-cols-2 md:items-center">
-      <EditableImage k="story" alt="Ždrijebe na farmi" wrapperClassName="overflow-hidden rounded-3xl" className="aspect-[4/5] w-full object-cover" />
+      <EditableImage k="story" alt="Ždrijebe na farmi" />
       <div>
         <EditableText k="story.eyebrow" as="p" className="text-sm font-medium uppercase tracking-[0.2em] text-primary" />
         <EditableText k="story.title" as="h2" className="mt-3 text-4xl font-semibold leading-tight sm:text-5xl" />
@@ -379,7 +378,7 @@ function MilkBlock() {
             ))}
           </div>
         </div>
-        <EditableImage k="milk" alt="Boce magarećeg mlijeka" wrapperClassName="overflow-hidden rounded-3xl" className="aspect-[5/4] w-full object-cover" />
+        <EditableImage k="milk" alt="Boce magarećeg mlijeka" />
       </div>
     </section>
   );
@@ -389,7 +388,7 @@ function ChatBlock() {
   const { setChatOpen } = useSite();
   return (
     <section className="mx-auto max-w-4xl px-6 py-24 text-center">
-      <EditableImage k="logo" alt="" fallback={logo} wrapperClassName="mx-auto size-24" className="size-24 object-contain" />
+      <EditableImage k="logo" alt="" fallback={logo} wrapperClassName="mx-auto w-24" />
       <EditableText k="chat.title" as="h2" className="mt-6 text-4xl font-semibold" />
       <EditableText k="chat.text" as="p" className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground" />
       <Button variant="hero" size="lg" className="mt-8" onClick={() => setChatOpen(true)}><EditableText k="hero.cta" /></Button>
@@ -437,7 +436,7 @@ function TextBlock({ id }: { id: string }) {
 function TextImageBlock({ id }: { id: string }) {
   return (
     <section className="mx-auto grid max-w-6xl gap-12 px-6 py-20 md:grid-cols-2 md:items-center">
-      <EditableImage k={`blk.${id}.img`} alt="" wrapperClassName="overflow-hidden rounded-3xl" className="aspect-[4/3] w-full object-cover" />
+      <EditableImage k={`blk.${id}.img`} alt="" />
       <div>
         <EditableText k={`blk.${id}.eyebrow`} as="p" className="text-sm font-medium uppercase tracking-[0.2em] text-primary" />
         <EditableText k={`blk.${id}.title`} as="h2" className="mt-3 text-4xl font-semibold leading-tight" />
@@ -463,7 +462,7 @@ function GalleryBlock({ id, embedded = false }: { id: string; embedded?: boolean
       const ids: string[] = [];
       for (const f of Array.from(files)) {
         const iid = newId();
-        entries[`img:gal.${id}.${iid}`] = await fileToDataUrl(f, 1400);
+        entries[`img:gal.${id}.${iid}`] = await fileToDataUrl(f);
         ids.push(iid);
       }
       entries[listKey] = JSON.stringify([...items, ...ids]);
@@ -483,11 +482,11 @@ function GalleryBlock({ id, embedded = false }: { id: string; embedded?: boolean
   return (
     <section className={embedded ? "min-w-0" : "mx-auto max-w-6xl px-6 py-20"}>
       {!embedded && <EditableText k={`blk.${id}.title`} as="h2" className="text-center text-4xl font-semibold" />}
-      <div className={cn("grid grid-cols-2 gap-4", !embedded && "mt-10 md:grid-cols-3")}>
+      <div className={cn("grid grid-cols-2 items-start gap-4", !embedded && "mt-10 md:grid-cols-3")}>
         {items.map((iid) => (
-          <div key={iid} className="group relative overflow-hidden rounded-2xl">
+          <div key={iid} className="relative min-w-0">
             <button type="button" className="block w-full" onClick={() => setView(img(`gal.${id}.${iid}`))}>
-              <img src={img(`gal.${id}.${iid}`)} alt="" loading="lazy" className="aspect-square w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              <img src={img(`gal.${id}.${iid}`)} alt="" loading="lazy" className="builder-image" />
             </button>
             {editMode && (
               <button type="button" onClick={() => removeImg(iid)} title="Obriši sliku" className="absolute right-2 top-2 rounded-full bg-edit p-2 text-edit-foreground shadow">
@@ -508,7 +507,7 @@ function GalleryBlock({ id, embedded = false }: { id: string; embedded?: boolean
       <Dialog open={!!view} onOpenChange={(v) => !v && setView(null)}>
         <DialogContent className="max-w-4xl border-0 bg-transparent p-0 shadow-none">
           <DialogHeader className="sr-only"><DialogTitle>Slika</DialogTitle></DialogHeader>
-          {view && <img src={view} alt="" className="max-h-[85vh] w-full rounded-xl object-contain" />}
+          {view && <img src={view} alt="" className="mx-auto block h-auto max-h-[85vh] w-auto max-w-full object-contain" />}
         </DialogContent>
       </Dialog>
     </section>
