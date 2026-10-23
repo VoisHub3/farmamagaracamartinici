@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
-  ArrowDown, ArrowUp, Baby, ChevronLeft, ChevronRight, Clock, Droplets, FilePlus2, GripVertical, Heart, ImagePlus, Leaf, Loader2, Mail, MapPin,
+  ArrowDown, ArrowUp, Baby, ChevronLeft, ChevronRight, Clock, Droplets, FilePlus2, GripVertical, Heart, ImagePlus, Loader2, Mail, MapPin,
   Phone, Plus, Trash2, X,
 } from "lucide-react";
 import { useSite } from "@/lib/site-content";

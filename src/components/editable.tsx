@@ -1,6 +1,6 @@
 import { useRef, useState, type ElementType, type CSSProperties } from "react";
 import { toast } from "sonner";
-import { ImageUp, Loader2 } from "lucide-react";
+import { ImageUp, Loader2, SquareRoundCorner } from "lucide-react";
 import { useSite } from "@/lib/site-content";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -130,6 +130,7 @@ export function EditableImage({
   eager?: boolean;
 }) {
   const { img, editMode, save } = useSite();
+  const radius = useImageRadius()(k);
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
 
@@ -151,7 +152,7 @@ export function EditableImage({
   return (
     <div className={cn("relative min-w-0 max-w-full", wrapperClassName)}>
       {img(k) || fallback ? (
-        <img src={img(k) || fallback} alt={alt} className={cn("builder-image", className)} loading={eager ? "eager" : "lazy"} />
+        <img src={img(k) || fallback} alt={alt} className={cn("builder-image", className)} style={{ borderRadius: radius }} loading={eager ? "eager" : "lazy"} />
       ) : (
         <div className={cn(className, "flex min-h-32 items-center justify-center bg-muted text-muted-foreground")}>
           {editMode ? "Dodaj sliku" : ""}
@@ -175,8 +176,49 @@ export function EditableImage({
             {busy ? <Loader2 className="size-4 animate-spin" /> : <ImageUp className="size-4" />}
             {!compact && "Promijeni sliku"}
           </Button>
+          {!compact && <div className={cn("absolute left-4 top-4 z-20", buttonClassName?.includes("top-24") && "top-24")}><RadiusButton k={k} /></div>}
         </>
       )}
     </div>
+  );
+}
+
+/** Returns a resolver: per-image radius (`img-radius:<key>`) or the global one (`img-radius:all`). */
+export function useImageRadius() {
+  const { json } = useSite();
+  const all = json<number>("img-radius:all", 0);
+  return (k: string) => json<number | null>(`img-radius:${k}`, null) ?? all;
+}
+
+export function RadiusButton({ k }: { k: string }) {
+  const { json, save } = useSite();
+  const [open, setOpen] = useState(false);
+  const [one, setOne] = useState("");
+  const [all, setAll] = useState(0);
+  const [busy, setBusy] = useState(false);
+  return (
+    <>
+      <button type="button" title="Zaobljenje uglova" aria-label="Zaobljenje uglova" className="rounded-full bg-edit p-2 text-edit-foreground shadow"
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); const v = json<number | null>(`img-radius:${k}`, null); setOne(v === null ? "" : String(v)); setAll(json<number>("img-radius:all", 0)); setOpen(true); }}>
+        <SquareRoundCorner className="size-4" />
+      </button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="text-foreground">
+          <DialogHeader><DialogTitle>Zaobljenje uglova slike</DialogTitle></DialogHeader>
+          <Label className="flex flex-col gap-2">Sve slike na sajtu (px)<Input type="number" min={0} max={500} value={all} onChange={(e) => setAll(Math.max(0, Number(e.target.value) || 0))} /></Label>
+          <Label className="flex flex-col gap-2">Samo ova slika (px, prazno = kao sve slike)<Input type="number" min={0} max={500} value={one} onChange={(e) => setOne(e.target.value)} /></Label>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>Otkaži</Button>
+            <Button disabled={busy} onClick={async () => {
+              setBusy(true);
+              try {
+                await save({ "img-radius:all": JSON.stringify(all), [`img-radius:${k}`]: one.trim() === "" ? "" : JSON.stringify(Math.max(0, Number(one) || 0)) });
+                setOpen(false); toast.success("Sačuvano");
+              } catch { toast.error("Nije sačuvano"); } finally { setBusy(false); }
+            }}>Sačuvaj</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
