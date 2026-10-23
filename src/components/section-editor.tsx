@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { BuilderButton, BuilderSocialLinks } from "@/components/builder-actions";
 
 type ElementKind = "title" | "text" | "image" | "gallery" | "button" | "social";
-type SectionElement = { id: string; type: ElementKind; margin: number; padding: number; width?: 25 | 33 | 50 | 66 | 75 | 100 };
+type SectionElement = { id: string; type: ElementKind; margin: number; padding: number; width?: 25 | 33 | 50 | 66 | 75 | 100 | undefined };
 type Column = { id: string; width: 25 | 33 | 50 | 66 | 75 | 100; padding: number; gap: number; elements: SectionElement[] };
 export type SectionSettings = { background: string; customColor?: string; paddingY: number; paddingX: number; marginTop: number; marginBottom: number; gap: number; alignment?: "left" | "center" | "right" };
 const defaults: SectionSettings = { background: "background", paddingY: 64, paddingX: 24, marginTop: 0, marginBottom: 0, gap: 24 };
