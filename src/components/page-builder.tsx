@@ -17,6 +17,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { cn } from "@/lib/utils";
 import logo from "@/assets/donkey-logo.png";
 import { FlexibleSection, SectionSettingsButton, sectionStyle, type SectionSettings } from "@/components/section-editor";
+import { BuilderSocialLinks } from "@/components/builder-actions";
 
 export type Block = { id: string; type: string };
 export type PageInfo = { slug: string };
@@ -25,6 +26,9 @@ const BUILTIN: Record<string, string> = {
   hero: "Glavna slika (naslovna)",
   story: "Naša priča",
   milk: "Mlijeko",
+  education: "Edukacije",
+  visits: "Posjete",
+  apartments: "Apartmani",
   chat: "Asistent (chat)",
   contact: "Kontakt",
 };
@@ -161,6 +165,7 @@ export function SitePage({ slug }: { slug: string }) {
         <span className="flex items-center gap-2">
           <EditableText k="footer.text" />
         </span>
+        <BuilderSocialLinks id="footer" />
       </footer>
       <ChatWidget />
       <AdminBar />
@@ -229,9 +234,12 @@ function SiteHeader({ overlay }: { overlay: boolean }) {
         <div className="flex flex-wrap items-center gap-5 text-sm">
           {overlay && (
             <>
-              <a href="#prica" className="hidden sm:inline"><EditableText k="nav.story" /></a>
-              <a href="#mlijeko" className="hidden sm:inline"><EditableText k="nav.milk" /></a>
-              <a href="#kontakt" className="hidden sm:inline"><EditableText k="nav.contact" /></a>
+              <a href="#prica" className="hidden md:inline"><EditableText k="nav.story" /></a>
+              <a href="#mlijeko" className="hidden md:inline"><EditableText k="nav.milk" /></a>
+              <a href="#edukacije" className="hidden lg:inline"><EditableText k="nav.education" /></a>
+              <a href="#posjete" className="hidden lg:inline"><EditableText k="nav.visits" /></a>
+              <a href="#apartmani" className="hidden lg:inline"><EditableText k="nav.apartments" /></a>
+              <a href="#kontakt" className="hidden md:inline"><EditableText k="nav.contact" /></a>
             </>
           )}
           {!overlay && <Link to="/"><EditableText k="nav.home" /></Link>}
@@ -335,6 +343,9 @@ function RenderBlock({ block }: { block: Block }) {
     case "hero": return <HeroBlock />;
     case "story": return <StoryBlock />;
     case "milk": return <MilkBlock />;
+    case "education": return <InfoBlock id="education" anchor="edukacije" imageAlt="Edukacije na farmi" />;
+    case "visits": return <InfoBlock id="visits" anchor="posjete" imageAlt="Posjeta farmi" reverse tinted />;
+    case "apartments": return <InfoBlock id="apartments" anchor="apartmani" imageAlt="Apartmani na farmi" />;
     case "chat": return <ChatBlock />;
     case "contact": return <ContactBlock />;
     case "text": return <TextBlock id={block.id} />;
@@ -445,6 +456,21 @@ function ContactBlock() {
             </li>
           ))}
         </ul>
+      </div>
+    </section>
+  );
+}
+
+function InfoBlock({ id, anchor, imageAlt, reverse = false, tinted = false }: { id: string; anchor: string; imageAlt: string; reverse?: boolean; tinted?: boolean }) {
+  return (
+    <section id={anchor} className={cn("section-shadow scroll-mt-24 py-24", tinted ? "bg-card" : "bg-background")}>
+      <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 md:grid-cols-2">
+        <EditableImage k={`${id}.img`} alt={imageAlt} wrapperClassName={cn(reverse && "md:order-2")} />
+        <div className={cn(reverse && "md:order-1")}>
+          <EditableText k={`${id}.eyebrow`} as="p" className="text-sm font-medium uppercase tracking-[0.2em] text-primary" />
+          <EditableText k={`${id}.title`} as="h2" className="mt-3 text-4xl font-semibold leading-tight sm:text-5xl" />
+          <EditableText k={`${id}.text`} as="p" className="mt-6 whitespace-pre-line text-lg leading-relaxed text-muted-foreground" />
+        </div>
       </div>
     </section>
   );
