@@ -14,3 +14,4 @@
 - [x] Remove footer leaf icon; admin login at /administracija; remove first-admin note.
 - [x] Separate title/text/image elements in 3-column rows (33% block width).
 - [x] Allow negative margins on sections and elements; element width control (25-100%); left/right arrows to swap columns without deleting.
+- [x] Add contact info icons element (location, phone, email, hours, web, message) with per-item text and optional links.
