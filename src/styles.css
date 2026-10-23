@@ -123,6 +123,10 @@
   background-image: var(--gradient-hero);
 }
 
+@utility section-shadow {
+  box-shadow: 0 -28px 48px -36px color-mix(in oklab, var(--foreground) 45%, transparent);
+}
+
 @utility editable-outline {
   outline: 2px dashed color-mix(in oklab, var(--edit) 70%, transparent);
   outline-offset: 4px;

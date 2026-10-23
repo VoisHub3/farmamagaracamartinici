@@ -8,6 +8,9 @@ export const defaultImages: Record<string, string> = {
   hero,
   story,
   milk,
+  "education.img": story,
+  "visits.img": hero,
+  "apartments.img": milk,
 };
 
 export const defaultTexts: Record<string, { sr: string; en: string }> = {
@@ -16,6 +19,9 @@ export const defaultTexts: Record<string, { sr: string; en: string }> = {
   "nav.story": { sr: "Naša priča", en: "Our story" },
   "nav.milk": { sr: "Mlijeko", en: "Milk" },
   "nav.contact": { sr: "Kontakt", en: "Contact" },
+  "nav.education": { sr: "Edukacije", en: "Education" },
+  "nav.visits": { sr: "Posjete", en: "Visits" },
+  "nav.apartments": { sr: "Apartmani", en: "Apartments" },
   "hero.eyebrow": { sr: "Porodična farma od 2009.", en: "Family farm since 2009" },
   "hero.title": { sr: "Gdje magarci žive sporo, a mlijeko liječi", en: "Where donkeys live slowly and milk heals" },
   "hero.subtitle": {
@@ -52,6 +58,24 @@ export const defaultTexts: Record<string, { sr: string; en: string }> = {
   "b2.text": { sr: "Umiruje suhu i osjetljivu kožu, koristi se u sapunima i kremama.", en: "Soothes dry and sensitive skin, used in soaps and creams." },
   "b3.title": { sr: "Za djecu", en: "For children" },
   "b3.text": { sr: "Lako svarljivo, često podnošljivo kod alergije na kravlje mlijeko.", en: "Easily digestible, often tolerated by those allergic to cow's milk." },
+  "education.eyebrow": { sr: "Edukacije", en: "Education" },
+  "education.title": { sr: "Učimo zajedno o magarcima", en: "Learning about donkeys together" },
+  "education.text": {
+    sr: "Organizujemo radionice za škole, porodice i sve koji žele da nauče kako se brine o magarcima — od ishrane i mužnje do pravilnog ophođenja prema životinjama.",
+    en: "We run workshops for schools, families and anyone who wants to learn how to care for donkeys — from feeding and milking to treating animals properly.",
+  },
+  "visits.eyebrow": { sr: "Posjete", en: "Visits" },
+  "visits.title": { sr: "Dođite da upoznate stado", en: "Come and meet the herd" },
+  "visits.text": {
+    sr: "Vođene ture farmom, druženje s magarcima i degustacija svježeg mlijeka. Posjete traju oko sat vremena i prilagođene su djeci i odraslima.",
+    en: "Guided farm tours, time with the donkeys and fresh milk tasting. Visits last about an hour and suit both children and adults.",
+  },
+  "apartments.eyebrow": { sr: "Apartmani", en: "Apartments" },
+  "apartments.title": { sr: "Prenoćite na farmi", en: "Stay overnight on the farm" },
+  "apartments.text": {
+    sr: "Izdajemo udobne apartmane u sklopu farme. Probudite se uz pogled na pašnjake i zvuke stada. Rezervacije su moguće tokom cijele godine — javite nam se za slobodne termine.",
+    en: "We rent out comfortable apartments on the farm. Wake up to views of the pastures and the sounds of the herd. Reservations are available all year round — contact us for available dates.",
+  },
   "chat.title": { sr: "Imate pitanje o mlijeku?", en: "A question about the milk?" },
   "chat.text": {
     sr: "Naš asistent zna sve o upotrebi magarećeg mlijeka — od doziranja do njege kože.",
