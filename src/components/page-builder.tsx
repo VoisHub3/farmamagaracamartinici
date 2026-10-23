@@ -2,11 +2,11 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
-  ArrowDown, ArrowUp, Baby, Clock, Droplets, FilePlus2, GripVertical, Heart, ImagePlus, Leaf, Loader2, Mail, MapPin,
+  ArrowDown, ArrowUp, Baby, ChevronLeft, ChevronRight, Clock, Droplets, FilePlus2, GripVertical, Heart, ImagePlus, Leaf, Loader2, Mail, MapPin,
   Phone, Plus, Trash2, X,
 } from "lucide-react";
 import { useSite } from "@/lib/site-content";
-import { EditableImage, EditableText } from "@/components/editable";
+import { EditableImage, EditableText, RadiusButton, useImageRadius } from "@/components/editable";
 import { AdminBar } from "@/components/admin-bar";
 import { ChatWidget } from "@/components/chat-widget";
 import { Button } from "@/components/ui/button";
@@ -481,7 +481,7 @@ function GalleryBlock({ id, embedded = false }: { id: string; embedded?: boolean
   const [busy, setBusy] = useState(false);
   const [view, setView] = useState<number | null>(null);
   const [limit, setLimit] = useState(9);
-  const radius = useImageRadius;
+  const radius = useImageRadius();
 
   const addFiles = async (files: FileList | null) => {
     if (!files?.length) return;
