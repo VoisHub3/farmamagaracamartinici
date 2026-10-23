@@ -2,11 +2,11 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import {
-  ArrowDown, ArrowUp, Baby, Clock, Droplets, FilePlus2, GripVertical, Heart, ImagePlus, Leaf, Loader2, Mail, MapPin,
+  ArrowDown, ArrowUp, Baby, ChevronLeft, ChevronRight, Clock, Droplets, FilePlus2, GripVertical, Heart, ImagePlus, Loader2, Mail, MapPin,
   Phone, Plus, Trash2, X,
 } from "lucide-react";
 import { useSite } from "@/lib/site-content";
-import { EditableImage, EditableText } from "@/components/editable";
+import { EditableImage, EditableText, RadiusButton, useImageRadius } from "@/components/editable";
 import { AdminBar } from "@/components/admin-bar";
 import { ChatWidget } from "@/components/chat-widget";
 import { Button } from "@/components/ui/button";
@@ -159,9 +159,8 @@ export function SitePage({ slug }: { slug: string }) {
 
       <footer className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-10 text-sm text-muted-foreground">
         <span className="flex items-center gap-2">
-          <Leaf className="size-4 text-olive" /> <EditableText k="footer.text" />
+          <EditableText k="footer.text" />
         </span>
-        <a href="/auth" className="hover:text-foreground">Admin</a>
       </footer>
       <ChatWidget />
       <AdminBar />
@@ -480,7 +479,9 @@ function GalleryBlock({ id, embedded = false }: { id: string; embedded?: boolean
   const items = json<string[]>(listKey, []);
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
-  const [view, setView] = useState<string | null>(null);
+  const [view, setView] = useState<number | null>(null);
+  const [limit, setLimit] = useState(9);
+  const radius = useImageRadius();
 
   const addFiles = async (files: FileList | null) => {
     if (!files?.length) return;
@@ -506,38 +507,76 @@ function GalleryBlock({ id, embedded = false }: { id: string; embedded?: boolean
   const removeImg = async (iid: string) => {
     await save({ [listKey]: JSON.stringify(items.filter((x) => x !== iid)) });
   };
+  const shown = editMode ? items : items.slice(0, limit);
+  const go = (d: number) => setView((v) => (v === null ? v : (v + d + items.length) % items.length));
+
+  useEffect(() => {
+    if (view === null) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "ArrowLeft") go(-1); if (e.key === "ArrowRight") go(1); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
 
   return (
     <section className={embedded ? "min-w-0" : "mx-auto max-w-6xl px-6 py-20"}>
       {!embedded && <EditableText k={`blk.${id}.title`} as="h2" className="text-center text-4xl font-semibold" />}
-      <div className={cn("grid grid-cols-2 items-start gap-4", !embedded && "mt-10 md:grid-cols-3")}>
-        {items.map((iid) => (
-          <div key={iid} className="relative min-w-0">
-            <button type="button" className="block w-full" onClick={() => setView(img(`gal.${id}.${iid}`))}>
-              <img src={img(`gal.${id}.${iid}`)} alt="" loading="lazy" className="builder-image" />
-            </button>
-            {editMode && (
-              <button type="button" onClick={() => removeImg(iid)} title="Obriši sliku" className="absolute right-2 top-2 rounded-full bg-edit p-2 text-edit-foreground shadow">
-                <Trash2 className="size-4" />
-              </button>
-            )}
-          </div>
+      <div className={cn("columns-2 gap-4", !embedded && "mt-10 md:columns-3")}>
+        {shown.map((iid, index) => (
+          <GalleryItem key={iid} k={`gal.${id}.${iid}`} src={img(`gal.${id}.${iid}`)} radius={radius} editMode={editMode} onOpen={() => setView(index)} onRemove={() => removeImg(iid)} />
         ))}
         {editMode && (
-          <button type="button" onClick={() => input.current?.click()} className="flex aspect-square flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-edit text-edit">
+          <button type="button" onClick={() => input.current?.click()} className="mb-4 flex aspect-square w-full break-inside-avoid flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-edit text-edit">
             {busy ? <Loader2 className="size-6 animate-spin" /> : <ImagePlus className="size-6" />}
             <span className="text-sm font-medium">Dodaj slike</span>
           </button>
         )}
       </div>
+      {!editMode && items.length > limit && (
+        <div className="mt-8 text-center"><Button variant="outline" onClick={() => setLimit((l) => l + 9)}>Prikaži više</Button></div>
+      )}
       {editMode && <input ref={input} type="file" accept="image/*" multiple hidden onChange={(e) => addFiles(e.target.files)} />}
       {!editMode && items.length === 0 && <p className="mt-6 text-center text-muted-foreground">—</p>}
-      <Dialog open={!!view} onOpenChange={(v) => !v && setView(null)}>
-        <DialogContent className="max-w-4xl border-0 bg-transparent p-0 shadow-none">
+      <Dialog open={view !== null} onOpenChange={(v) => !v && setView(null)}>
+        <DialogContent className="max-w-5xl border-0 bg-transparent p-0 shadow-none">
           <DialogHeader className="sr-only"><DialogTitle>Slika</DialogTitle></DialogHeader>
-          {view && <img src={view} alt="" className="mx-auto block h-auto max-h-[85vh] w-auto max-w-full object-contain" />}
+          {view !== null && items[view] && (
+            <div className="flex flex-col items-center gap-4">
+              <div className="relative flex w-full items-center justify-center">
+                <img src={img(`gal.${id}.${items[view]}`)} alt="" className="mx-auto block h-auto max-h-[80vh] w-auto max-w-full object-contain" />
+                {items.length > 1 && <>
+                  <Button size="icon" variant="secondary" aria-label="Prethodna slika" className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full shadow" onClick={() => go(-1)}><ChevronLeft /></Button>
+                  <Button size="icon" variant="secondary" aria-label="Sljedeća slika" className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full shadow" onClick={() => go(1)}><ChevronRight /></Button>
+                </>}
+              </div>
+              {items.length > 1 && (
+                <div className="flex flex-wrap justify-center gap-2">
+                  {items.map((iid, i) => (
+                    <button key={iid} type="button" aria-label={`Slika ${i + 1}`} onClick={() => setView(i)} className={cn("size-2.5 rounded-full bg-background/60 transition", i === view && "scale-125 bg-background")} />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </section>
+  );
+}
+
+function GalleryItem({ k, src, radius, editMode, onOpen, onRemove }: { k: string; src: string; radius: (k: string) => number; editMode: boolean; onOpen: () => void; onRemove: () => void }) {
+  return (
+    <div className="relative mb-4 min-w-0 break-inside-avoid">
+      <button type="button" className="block w-full" onClick={onOpen}>
+        <img src={src} alt="" loading="lazy" className="block h-auto w-full" style={{ borderRadius: radius(k) }} />
+      </button>
+      {editMode && (
+        <div className="absolute right-2 top-2 flex gap-1">
+          <RadiusButton k={k} />
+          <button type="button" onClick={onRemove} title="Obriši sliku" className="rounded-full bg-edit p-2 text-edit-foreground shadow">
+            <Trash2 className="size-4" />
+          </button>
+        </div>
+      )}
+    </div>
   );
 }

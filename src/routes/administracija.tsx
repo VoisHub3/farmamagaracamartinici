@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import logo from "@/assets/donkey-logo.png";
 
-export const Route = createFileRoute("/auth")({
+export const Route = createFileRoute("/administracija")({
   head: () => ({
     meta: [
       { title: "Prijava za admina — Farma Magarica" },
@@ -61,7 +61,6 @@ function AuthPage() {
         <div className="text-center">
           <img src={logo} alt="" width={64} height={64} className="mx-auto size-16" />
           <h1 className="mt-3 text-2xl font-semibold">{mode === "in" ? "Prijava" : "Registracija"}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Prvi registrovani nalog postaje admin.</p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>

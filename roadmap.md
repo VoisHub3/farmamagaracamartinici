@@ -9,4 +9,7 @@
 - [x] Add section background, font size, margins and padding controls.
 - [x] Verify editing, saving, reloading and mobile rendering.
 - [x] Make the site menu sticky: transparent over the main image, solid cream once scrolled past it; verified fixed/sticky positioning, anchor targets clearing the bar, and no layout shift.
-- [x] Make the header image span 100% of the page width with proportions kept; verified at 1158, 1280 and 390 CSS px.
+- [x] Make the header image span 100% of the page width with proportions kept; verified at 1158, 1280 and 390 CSS px.- [ ] Masonry gallery with 9-image limit, show more, lightbox arrows and dots.
+- [x] Border radius for all images or per image.
+- [x] Remove footer leaf icon; admin login at /administracija; remove first-admin note.
+- [x] Separate title/text/image elements in 3-column rows (33% block width).

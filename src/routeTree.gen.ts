@@ -10,7 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AdministracijaRouteImport } from './routes/administracija'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as PSlugRouteImport } from './routes/p.$slug'
 
@@ -19,9 +19,9 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+const AdministracijaRoute = AdministracijaRouteImport.update({
+  id: '/administracija',
+  path: '/administracija',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
@@ -37,34 +37,34 @@ const PSlugRoute = PSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/administracija': typeof AdministracijaRoute
   '/api/chat': typeof ApiChatRoute
   '/p/$slug': typeof PSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/administracija': typeof AdministracijaRoute
   '/api/chat': typeof ApiChatRoute
   '/p/$slug': typeof PSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/administracija': typeof AdministracijaRoute
   '/api/chat': typeof ApiChatRoute
   '/p/$slug': typeof PSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/api/chat' | '/p/$slug'
+  fullPaths: '/' | '/administracija' | '/api/chat' | '/p/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/api/chat' | '/p/$slug'
-  id: '__root__' | '/' | '/auth' | '/api/chat' | '/p/$slug'
+  to: '/' | '/administracija' | '/api/chat' | '/p/$slug'
+  id: '__root__' | '/' | '/administracija' | '/api/chat' | '/p/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AuthRoute: typeof AuthRoute
+  AdministracijaRoute: typeof AdministracijaRoute
   ApiChatRoute: typeof ApiChatRoute
   PSlugRoute: typeof PSlugRoute
 }
@@ -78,11 +78,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/administracija': {
+      id: '/administracija'
+      path: '/administracija'
+      fullPath: '/administracija'
+      preLoaderRoute: typeof AdministracijaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
@@ -104,7 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AuthRoute: AuthRoute,
+  AdministracijaRoute: AdministracijaRoute,
   ApiChatRoute: ApiChatRoute,
   PSlugRoute: PSlugRoute,
 }
