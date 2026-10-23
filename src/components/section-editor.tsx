@@ -1,5 +1,5 @@
 import { useState, type CSSProperties, type ReactNode } from "react";
-import { ArrowDown, ArrowUp, Columns3, Image, Images, Plus, Settings2, Trash2, Type, AlignLeft, AlignCenter, AlignRight, MousePointerClick, Share2 } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Columns3, Image, Images, Plus, Settings2, Trash2, Type, AlignLeft, AlignCenter, AlignRight, MousePointerClick, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { useSite } from "@/lib/site-content";
 import { EditableImage, EditableText } from "@/components/editable";
@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { BuilderButton, BuilderSocialLinks } from "@/components/builder-actions";
 
 type ElementKind = "title" | "text" | "image" | "gallery" | "button" | "social";
-type SectionElement = { id: string; type: ElementKind; margin: number; padding: number };
+type SectionElement = { id: string; type: ElementKind; margin: number; padding: number; width?: 25 | 33 | 50 | 66 | 75 | 100 };
 type Column = { id: string; width: 25 | 33 | 50 | 66 | 75 | 100; padding: number; gap: number; elements: SectionElement[] };
 export type SectionSettings = { background: string; customColor?: string; paddingY: number; paddingX: number; marginTop: number; marginBottom: number; gap: number; alignment?: "left" | "center" | "right" };
 const defaults: SectionSettings = { background: "background", paddingY: 64, paddingX: 24, marginTop: 0, marginBottom: 0, gap: 24 };
@@ -50,7 +50,7 @@ export function SectionSettingsButton({ id }: { id: string }) {
     <Dialog open={open} onOpenChange={setOpen}><DialogContent className="max-h-[85vh] overflow-y-auto"><DialogHeader><DialogTitle>Izgled sekcije</DialogTitle></DialogHeader>
       <Label>Boja pozadine</Label><div className="flex flex-wrap gap-2">{backgrounds.map((bg) => <Button key={bg.id} variant="outline" size="icon" title={bg.label} aria-label={bg.label} aria-pressed={draft.background === bg.id} className={draft.background === bg.id ? "ring-2 ring-edit" : ""} onClick={() => change({ background: bg.id })}><span className={`size-6 rounded border ${bg.color}`} /></Button>)}</div>
       <Label className="flex items-center justify-between">Prilagođena boja<Input type="color" aria-label="Prilagođena boja" className="h-10 w-20 p-1" value={draft.customColor ?? "#ffffff"} onChange={(e) => change({ background: "custom", customColor: e.target.value })} /></Label>
-      <div className="grid grid-cols-2 gap-4"><NumberSetting label="Unutrašnji razmak gore/dolje" value={draft.paddingY} onChange={(paddingY) => change({ paddingY })} /><NumberSetting label="Unutrašnji razmak lijevo/desno" value={draft.paddingX} onChange={(paddingX) => change({ paddingX })} /><NumberSetting label="Margina iznad" value={draft.marginTop} onChange={(marginTop) => change({ marginTop })} /><NumberSetting label="Margina ispod" value={draft.marginBottom} onChange={(marginBottom) => change({ marginBottom })} /><NumberSetting label="Razmak između blokova" value={draft.gap} onChange={(gap) => change({ gap })} /></div>
+      <div className="grid grid-cols-2 gap-4"><NumberSetting label="Unutrašnji razmak gore/dolje" value={draft.paddingY} onChange={(paddingY) => change({ paddingY })} /><NumberSetting label="Unutrašnji razmak lijevo/desno" value={draft.paddingX} onChange={(paddingX) => change({ paddingX })} /><NumberSetting label="Margina iznad" value={draft.marginTop} onChange={(marginTop) => change({ marginTop })} min={-240} /><NumberSetting label="Margina ispod" value={draft.marginBottom} onChange={(marginBottom) => change({ marginBottom })} min={-240} /><NumberSetting label="Razmak između blokova" value={draft.gap} onChange={(gap) => change({ gap })} /></div>
       <Label>Poravnanje blokova u redu</Label><div className="flex gap-2">{([{ value: "left", label: "Lijevo", Icon: AlignLeft }, { value: "center", label: "Centrirano", Icon: AlignCenter }, { value: "right", label: "Desno", Icon: AlignRight }] as const).map(({ value, label, Icon }) => <Button key={value} variant="outline" size="icon" aria-label={label} title={label} aria-pressed={(draft.alignment ?? "left") === value} className={(draft.alignment ?? "left") === value ? "ring-2 ring-edit" : ""} onClick={() => change({ alignment: value })}><Icon /></Button>)}</div>
       <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Otkaži</Button><Button disabled={busy} onClick={async () => { setBusy(true); try { await save({ [key]: JSON.stringify(draft) }); setOpen(false); toast.success("Izgled sačuvan"); } catch { toast.error("Izgled nije sačuvan"); } finally { setBusy(false); } }}>Sačuvaj</Button></DialogFooter>
     </DialogContent></Dialog>
