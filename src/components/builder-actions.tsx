@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Facebook, Instagram, Youtube, MousePointerClick, Settings2, type LucideIcon } from "lucide-react";
+import { Clock, Facebook, Globe, Instagram, Mail, MapPin, MessageCircle, Phone, Plus, Trash2, Youtube, MousePointerClick, Settings2, type LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useSite } from "@/lib/site-content";
 import { Button } from "@/components/ui/button";
@@ -104,6 +104,63 @@ export function BuilderSocialLinks({ id }: { id: string }) {
     </div>
     <Dialog open={open} onOpenChange={setOpen}><DialogContent><DialogHeader><DialogTitle>Društvene mreže</DialogTitle></DialogHeader>
       {networks.map(({ id: networkId, name, Icon }) => <Label key={networkId} className="flex flex-col gap-2"><span className="flex items-center gap-2"><Icon className="size-4" />{name}</span><Input type="url" placeholder="https://…" value={draft[networkId] ?? ""} onChange={(e) => setDraft((old) => ({ ...old, [networkId]: e.target.value }))} /></Label>)}
+      <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Otkaži</Button><Button disabled={busy} onClick={persist}>Sačuvaj</Button></DialogFooter>
+    </DialogContent></Dialog>
+  </>;
+}
+
+type ContactItem = { icon: string; sr: string; en: string; link: string };
+const contactIcons: { id: string; name: string; Icon: LucideIcon }[] = [
+  { id: "pin", name: "Lokacija", Icon: MapPin },
+  { id: "phone", name: "Telefon", Icon: Phone },
+  { id: "mail", name: "Mejl", Icon: Mail },
+  { id: "clock", name: "Radno vrijeme", Icon: Clock },
+  { id: "globe", name: "Web sajt", Icon: Globe },
+  { id: "message", name: "Poruka", Icon: MessageCircle },
+];
+
+export function BuilderContact({ id }: { id: string }) {
+  const { json, save, editMode, lang } = useSite();
+  const key = `contact:${id}`;
+  const settings = json<ContactItem[]>(key, []);
+  const [draft, setDraft] = useState<ContactItem[]>(settings);
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const changeItem = (index: number, patch: Partial<ContactItem>) => setDraft((old) => old.map((item, i) => (i === index ? { ...item, ...patch } : item)));
+  const persist = async () => {
+    const items = draft.filter((item) => item.sr.trim() || item.en.trim());
+    if (!items.length) { toast.error("Dodajte barem jedan podatak"); return; }
+    for (const item of items) {
+      const link = item.link.trim();
+      if (link && !safeBuilderLink(link)) { toast.error("Unesite ispravan link (https://, /, #, mailto: ili tel:)"); return; }
+    }
+    setBusy(true);
+    try { await save({ [key]: JSON.stringify(items) }); setOpen(false); toast.success("Info ikone sačuvane"); }
+    catch { toast.error("Info ikone nisu sačuvane"); }
+    finally { setBusy(false); }
+  };
+  return <>
+    {settings.length > 0 && <ul className="flex min-w-0 flex-col gap-3">
+      {settings.map((item, index) => {
+        const Icon = contactIcons.find((c) => c.id === item.icon)?.Icon ?? MapPin;
+        const label = item[lang] || item.sr || item.en;
+        const href = safeBuilderLink(item.link ?? "");
+        const content = <span className="flex min-w-0 items-center gap-3"><span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-card text-primary"><Icon className="size-5" /></span><span className="min-w-0 break-words">{label}</span></span>;
+        return <li key={index} className="min-w-0">{href ? <a href={href} className="flex min-w-0 items-center hover:underline">{content}</a> : content}</li>;
+      })}
+    </ul>}
+    {editMode && <Button variant="outline" size="icon-sm" className="self-start" aria-label="Podesi info ikone" title="Podesi info ikone" onClick={() => { setDraft(settings.length ? settings : [{ icon: "pin", sr: "Novi podatak", en: "New item", link: "" }]); setOpen(true); }}><Settings2 /></Button>}
+    <Dialog open={open} onOpenChange={setOpen}><DialogContent className="max-h-[85vh] overflow-y-auto"><DialogHeader><DialogTitle>Info ikone</DialogTitle></DialogHeader>
+      {draft.map((item, index) => <div key={index} className="space-y-2 rounded-lg border p-3">
+        <div className="flex items-end gap-2">
+          <Label className="flex min-w-0 flex-1 flex-col gap-2">Ikona<Select value={item.icon} onValueChange={(icon) => changeItem(index, { icon })}><SelectTrigger aria-label="Ikona"><SelectValue /></SelectTrigger><SelectContent>{contactIcons.map(({ id: iconId, name, Icon: ItemIcon }) => <SelectItem key={iconId} value={iconId}><span className="flex items-center gap-2"><ItemIcon className="size-4" />{name}</span></SelectItem>)}</SelectContent></Select></Label>
+          <Button variant="outline" size="icon-sm" title="Obriši podatak" aria-label="Obriši podatak" onClick={() => setDraft((old) => old.filter((_, i) => i !== index))}><Trash2 /></Button>
+        </div>
+        <Label className="flex flex-col gap-2">Tekst (ME)<Input value={item.sr} onChange={(e) => changeItem(index, { sr: e.target.value })} /></Label>
+        <Label className="flex flex-col gap-2">Tekst (EN)<Input value={item.en} onChange={(e) => changeItem(index, { en: e.target.value })} /></Label>
+        <Label className="flex flex-col gap-2">Link (nije obavezno)<Input value={item.link} placeholder="https://, mailto: ili tel:" onChange={(e) => changeItem(index, { link: e.target.value })} /></Label>
+      </div>)}
+      <Button variant="outline" className="self-start" onClick={() => setDraft((old) => [...old, { icon: "pin", sr: "Novi podatak", en: "New item", link: "" }])}><Plus />Dodaj podatak</Button>
       <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Otkaži</Button><Button disabled={busy} onClick={persist}>Sačuvaj</Button></DialogFooter>
     </DialogContent></Dialog>
   </>;

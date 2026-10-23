@@ -1,5 +1,5 @@
 import { useState, type CSSProperties, type ReactNode } from "react";
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Columns3, Image, Images, Plus, Settings2, Trash2, Type, AlignLeft, AlignCenter, AlignRight, MousePointerClick, Share2 } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Columns3, Image, Images, Plus, Settings2, Trash2, Type, AlignLeft, AlignCenter, AlignRight, MousePointerClick, Share2, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { useSite } from "@/lib/site-content";
 import { EditableImage, EditableText } from "@/components/editable";
@@ -8,9 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BuilderButton, BuilderSocialLinks } from "@/components/builder-actions";
+import { BuilderButton, BuilderContact, BuilderSocialLinks } from "@/components/builder-actions";
 
-type ElementKind = "title" | "text" | "image" | "gallery" | "button" | "social";
+type ElementKind = "title" | "text" | "image" | "gallery" | "button" | "social" | "contact";
 type SectionElement = { id: string; type: ElementKind; margin: number; padding: number; width?: 25 | 33 | 50 | 66 | 75 | 100 | undefined };
 type Column = { id: string; width: 25 | 33 | 50 | 66 | 75 | 100; padding: number; gap: number; elements: SectionElement[] };
 export type SectionSettings = { background: string; customColor?: string; paddingY: number; paddingX: number; marginTop: number; marginBottom: number; gap: number; alignment?: "left" | "center" | "right" };
@@ -56,7 +56,7 @@ export function SectionSettingsButton({ id }: { id: string }) {
     </DialogContent></Dialog>
   </>;
 }
-const kinds: { type: ElementKind; label: string; icon: typeof Type }[] = [{ type: "title", label: "Naslov", icon: Type }, { type: "text", label: "Tekst", icon: AlignLeft }, { type: "image", label: "Slika", icon: Image }, { type: "gallery", label: "Galerija", icon: Images }, { type: "button", label: "Dugme", icon: MousePointerClick }, { type: "social", label: "Društvene mreže", icon: Share2 }];
+const kinds: { type: ElementKind; label: string; icon: typeof Type }[] = [{ type: "title", label: "Naslov", icon: Type }, { type: "text", label: "Tekst", icon: AlignLeft }, { type: "image", label: "Slika", icon: Image }, { type: "gallery", label: "Galerija", icon: Images }, { type: "button", label: "Dugme", icon: MousePointerClick }, { type: "social", label: "Društvene mreže", icon: Share2 }, { type: "contact", label: "Info ikone", icon: Phone }];
 const widthOptions = [25, 33, 50, 66, 75, 100] as const;
 const widthLabel = (w: number) => (w === 33 ? "33%" : w === 66 ? "66%" : `${w}%`);
 export function FlexibleSection({ id, renderGallery }: { id: string; renderGallery: (id: string) => ReactNode }) {
@@ -99,6 +99,7 @@ export function FlexibleSection({ id, renderGallery }: { id: string; renderGalle
           {el.type === "gallery" && renderGallery(el.id)}
           {el.type === "button" && <BuilderButton id={el.id} />}
           {el.type === "social" && <BuilderSocialLinks id={el.id} />}
+          {el.type === "contact" && <BuilderContact id={el.id} />}
         </div>; })}</div>
         {editMode && <div className="mt-4 flex flex-wrap gap-2">{kinds.map(({ type, label, icon: Icon }) => <Button key={type} variant="outline" size="sm" onClick={() => addElement(c, type)}><Icon />{label}</Button>)}</div>}
         {editMode && <Button variant="ghost" size="sm" className="mt-3" onClick={() => addColumn(newWidth, c.id)}><Plus />Dodaj blok pored</Button>}
