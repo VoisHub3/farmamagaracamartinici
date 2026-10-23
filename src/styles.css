@@ -166,6 +166,16 @@
     flex-basis: calc((100% + var(--block-gap)) * var(--block-width) - var(--block-gap));
   }
 }
+.builder-element {
+  flex: 0 0 100%;
+  max-width: 100%;
+}
+@media (min-width: 768px) {
+  .builder-element {
+    flex-basis: calc((100% + var(--el-gap, 0px)) * var(--el-width, 1) - var(--el-gap, 0px));
+    max-width: calc((100% + var(--el-gap, 0px)) * var(--el-width, 1) - var(--el-gap, 0px));
+  }
+}
 .builder-configured {
   background: var(--section-background);
   color: var(--section-foreground);
