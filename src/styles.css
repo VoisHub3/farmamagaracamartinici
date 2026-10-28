@@ -119,6 +119,14 @@
   }
 }
 
+[data-menu-section], section[id] {
+  scroll-margin-top: var(--site-menu-offset, 100px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
 @utility bg-hero-overlay {
   background-image: var(--gradient-hero);
 }

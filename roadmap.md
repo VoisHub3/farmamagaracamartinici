@@ -1,4 +1,5 @@
 # Tasks
+- [x] Repair menu anchor targets and add editable section links; verified admin creation, saving/reload, section navigation and mobile display; removed temporary test link.
 - [x] Remove background bands around the header image and overlay the menu; verified white/black fixed menu on scroll.
 - [x] Repair logo replacement; verified real PNG upload, dimensions after reload, and restoration of original logo.
 - [x] Preserve uploaded image dimensions and proportions across blocks, galleries, logos and the main image; verified portrait/wide replacements, gallery proportions, reload and narrow layouts.
