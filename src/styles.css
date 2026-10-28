@@ -213,3 +213,18 @@
 @media (max-width: 767px) {
   .builder-text-size { font-size: min(var(--text-size), 48px); }
 }
+
+/* Responsive builder margins: each screen size uses only its own value. */
+.builder-element { margin-top: var(--mt-m, 0px); }
+.builder-column { margin: var(--cmt-m, 0px) var(--cmr-m, 0px) var(--cmb-m, 0px) var(--cml-m, 0px); }
+.builder-spacer { height: var(--sp-m, var(--sp-t, var(--sp-d, 40px))); }
+@media (min-width: 768px) {
+  .builder-element { margin-top: var(--mt-t, 0px); }
+  .builder-column { margin: var(--cmt-t, 0px) var(--cmr-t, 0px) var(--cmb-t, 0px) var(--cml-t, 0px); }
+  .builder-spacer { height: var(--sp-t, var(--sp-d, 40px)); }
+}
+@media (min-width: 1024px) {
+  .builder-element { margin-top: var(--mt-d, 0px); }
+  .builder-column { margin: var(--cmt-d, 0px) var(--cmr-d, 0px) var(--cmb-d, 0px) var(--cml-d, 0px); }
+  .builder-spacer { height: var(--sp-d, 40px); }
+}
