@@ -18,6 +18,8 @@ import { cn } from "@/lib/utils";
 import logo from "@/assets/donkey-logo.png";
 import { FlexibleSection, SectionSettingsButton, sectionStyle, type SectionSettings } from "@/components/section-editor";
 import { BuilderSocialLinks } from "@/components/builder-actions";
+import { MenuEditor, type MenuTarget } from "@/components/menu-editor";
+import { availableSectionLinks, defaultSectionLinks, sectionAnchor, type SectionMenuLink } from "@/lib/menu-links";
 
 export type Block = { id: string; type: string };
 export type PageInfo = { slug: string };
@@ -90,10 +92,12 @@ export function SitePage({ slug }: { slug: string }) {
 
   return (
     <div className="min-h-screen">
-      <SiteHeader overlay={heroFirst} />
+      <SiteHeader overlay={heroFirst} slug={slug} blocks={blocks} />
       {blocks.map((b, i) => (
         <div
           key={b.id}
+          id={sectionAnchor(b.id)}
+          data-menu-section
           className={cn("relative", json<SectionSettings | null>(`section-style:${b.id}`, null) && b.type !== "section" && "builder-configured", editMode && "group/block", dragOver === i && dragFrom !== i && "ring-4 ring-edit ring-inset")}
           style={(() => { const settings = json<SectionSettings | null>(`section-style:${b.id}`, null); return settings && b.type !== "section" ? sectionStyle(settings) : undefined; })()}
           onDragOver={(e) => {
@@ -181,8 +185,15 @@ function IconBtn({ children, ...p }: { children: ReactNode; title: string; onCli
   );
 }
 
-function SiteHeader({ overlay }: { overlay: boolean }) {
-  const { lang, setLang, editMode, save, json } = useSite();
+function SiteHeader({ overlay, slug, blocks }: { overlay: boolean; slug: string; blocks: Block[] }) {
+  const { lang, setLang, editMode, save, json, t, textFor } = useSite();
+  const links = availableSectionLinks(json<SectionMenuLink[]>(`menu:${slug}`, defaultSectionLinks(blocks, textFor)), blocks);
+  const targets: MenuTarget[] = blocks.map((block, index) => {
+    const columns = json<{ elements: { id: string; type: string }[] }[]>(`section:${block.id}`, []);
+    const titleElement = columns.flatMap((column) => column.elements).find((el) => el.type === "title");
+    const title = block.type === "section" ? (titleElement ? t(`element.${titleElement.id}`) : "") : t(BUILTIN[block.type] ? `${block.type}.title` : `blk.${block.id}.title`);
+    return { ...block, label: `${index + 1}. ${title || BUILTIN[block.type] || CUSTOM[block.type] || block.type}` };
+  });
   const pages = json<PageInfo[]>("pages", []);
   const [pagesOpen, setPagesOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
@@ -199,6 +210,15 @@ function SiteHeader({ overlay }: { overlay: boolean }) {
       window.removeEventListener("resize", onScroll);
     };
   }, [overlay]);
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+    const update = () => document.documentElement.style.setProperty("--site-menu-offset", `${header.getBoundingClientRect().height + 16}px`);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(header);
+    return () => { observer.disconnect(); document.documentElement.style.removeProperty("--site-menu-offset"); };
+  }, []);
   const solid = !overlay || scrolled;
   const removeBrand = async () => {
     await save({ "t:brand.name:sr": "", "t:brand.name:en": "" });
@@ -232,17 +252,13 @@ function SiteHeader({ overlay }: { overlay: boolean }) {
           )}
         </div>
         <div className="flex flex-wrap items-center gap-5 text-sm">
-          {overlay && (
-            <>
-              <a href="#prica" className="hidden md:inline"><EditableText k="nav.story" /></a>
-              <a href="#mlijeko" className="hidden md:inline"><EditableText k="nav.milk" /></a>
-              <a href="#edukacije" className="hidden lg:inline"><EditableText k="nav.education" /></a>
-              <a href="#posjete" className="hidden lg:inline"><EditableText k="nav.visits" /></a>
-              <a href="#apartmani" className="hidden lg:inline"><EditableText k="nav.apartments" /></a>
-              <a href="#kontakt" className="hidden md:inline"><EditableText k="nav.contact" /></a>
-            </>
-          )}
-          {!overlay && <Link to="/"><EditableText k="nav.home" /></Link>}
+          {slug !== "home" && <Link to="/"><EditableText k="nav.home" /></Link>}
+          {links.map((link) => slug === "home" ? (
+            <Link key={link.id} to="/" hash={sectionAnchor(link.sectionId)} className="break-words hover:underline">{link[lang] || link.sr || link.en}</Link>
+          ) : (
+            <Link key={link.id} to="/p/$slug" params={{ slug }} hash={sectionAnchor(link.sectionId)} className="break-words hover:underline">{link[lang] || link.sr || link.en}</Link>
+          ))}
+          {editMode && <MenuEditor slug={slug} links={links} targets={targets} />}
           {pages.map((p) => (
             <Link key={p.slug} to="/p/$slug" params={{ slug: p.slug }} activeProps={{ className: "underline underline-offset-4" }}>
               <EditableText k={`page.${p.slug}.title`} />
