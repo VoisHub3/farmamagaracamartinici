@@ -17,7 +17,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { cn } from "@/lib/utils";
 import logo from "@/assets/donkey-logo.png";
 import { FlexibleSection, SectionSettingsButton, sectionStyle, type SectionSettings } from "@/components/section-editor";
-import { BuilderSocialLinks } from "@/components/builder-actions";
+import { BuilderButton, BuilderSocialLinks } from "@/components/builder-actions";
 import { MenuEditor, type MenuTarget } from "@/components/menu-editor";
 import { availableSectionLinks, defaultSectionLinks, sectionAnchor, type SectionMenuLink } from "@/lib/menu-links";
 
@@ -372,7 +372,7 @@ function RenderBlock({ block }: { block: Block }) {
 }
 
 function HeroBlock() {
-  const { setChatOpen } = useSite();
+  const { textFor } = useSite();
   return (
     <section data-hero className="relative">
       <EditableImage k="hero" alt="Magarci na pašnjaku" eager wrapperClassName="col-start-1 row-start-1 w-full" className="builder-image-full" buttonClassName="z-30 top-24" />
@@ -382,8 +382,8 @@ function HeroBlock() {
         <EditableText k="hero.title" as="h1" className="max-w-3xl text-xl font-semibold leading-[1.05] sm:text-5xl lg:text-7xl" />
         <EditableText k="hero.subtitle" as="p" className="mt-2 max-w-xl text-xs opacity-90 sm:mt-6 sm:text-lg" />
         <div className="mt-3 flex flex-wrap gap-2 sm:mt-8 sm:gap-3">
-          <Button variant="hero" size="lg" className="h-8 px-3 text-xs sm:h-12 sm:px-8 sm:text-base" onClick={() => setChatOpen(true)}><EditableText k="hero.cta" /></Button>
-          <Button variant="heroGhost" size="lg" className="h-8 px-3 text-xs sm:h-12 sm:px-8 sm:text-base" asChild><a href="#prica"><EditableText k="hero.cta2" /></a></Button>
+          <BuilderButton id="hero-cta" size="lg" className="text-xs sm:min-h-12 sm:px-8 sm:text-base" fallback={{ sr: textFor("hero.cta", "sr"), en: textFor("hero.cta", "en"), action: "chat", variant: "hero" }} />
+          <BuilderButton id="hero-cta2" size="lg" className="text-xs sm:min-h-12 sm:px-8 sm:text-base" fallback={{ sr: textFor("hero.cta2", "sr"), en: textFor("hero.cta2", "en"), action: "link", target: "#prica", variant: "heroGhost" }} />
         </div>
       </div>
     </section>
@@ -439,13 +439,13 @@ function MilkBlock() {
 }
 
 function ChatBlock() {
-  const { setChatOpen } = useSite();
+  const { textFor } = useSite();
   return (
     <section className="mx-auto max-w-4xl px-6 py-24 text-center">
       <EditableImage k="logo" alt="" fallback={logo} wrapperClassName="mx-auto w-24" />
       <EditableText k="chat.title" as="h2" className="mt-6 text-4xl font-semibold" />
       <EditableText k="chat.text" as="p" className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground" />
-      <Button variant="hero" size="lg" className="mt-8" onClick={() => setChatOpen(true)}><EditableText k="hero.cta" /></Button>
+      <div className="mt-8 flex justify-center"><BuilderButton id="chat-cta" size="lg" fallback={{ sr: textFor("hero.cta", "sr"), en: textFor("hero.cta", "en"), action: "chat", variant: "hero" }} /></div>
     </section>
   );
 }
