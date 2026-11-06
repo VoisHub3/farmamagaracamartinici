@@ -30,6 +30,11 @@ export function BuilderButton({ id }: { id: string }) {
   const [draft, setDraft] = useState(settings);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [sections, setSections] = useState<{ id: string; label: string }[]>([]);
+  const openDialog = () => {
+    setSections(Array.from(document.querySelectorAll<HTMLElement>('[id^="section-"]')).map((el, i) => ({ id: el.id, label: `${i + 1}. ${el.querySelector("h1,h2,h3")?.textContent?.trim().slice(0, 50) || el.id}` })));
+    setDraft(settings); setOpen(true);
+  };
   const change = (patch: Partial<ButtonSettings>) => setDraft((old) => ({ ...old, ...patch }));
   const label = settings[lang] || settings.sr || settings.en;
   const href = settings.action === "link" ? safeBuilderLink(settings.target) : undefined;
@@ -54,13 +59,14 @@ export function BuilderButton({ id }: { id: string }) {
     <div className="flex min-w-0 flex-wrap items-center gap-2">
       {href ? <Button asChild variant={settings.variant} className="h-auto min-h-9 max-w-full whitespace-normal break-words"><a href={href} target={settings.newTab ? "_blank" : undefined} rel={settings.newTab ? "noopener noreferrer" : undefined}>{label}</a></Button>
         : <Button variant={settings.variant} disabled={settings.action === "link"} className="h-auto min-h-9 max-w-full whitespace-normal break-words" onClick={run}>{label}</Button>}
-      {editMode && <Button variant="outline" size="icon-sm" aria-label="Podesi dugme" title="Podesi dugme" onClick={() => { setDraft(settings); setOpen(true); }}><Settings2 /></Button>}
+      {editMode && <Button variant="outline" size="icon-sm" aria-label="Podesi dugme" title="Podesi dugme" onClick={openDialog}><Settings2 /></Button>}
     </div>
     <Dialog open={open} onOpenChange={setOpen}><DialogContent className="max-h-[85vh] overflow-y-auto"><DialogHeader><DialogTitle>Podešavanje dugmeta</DialogTitle></DialogHeader>
       <Label className="flex flex-col gap-2">Tekst dugmeta (ME)<Input value={draft.sr} onChange={(e) => change({ sr: e.target.value })} /></Label>
       <Label className="flex flex-col gap-2">Tekst dugmeta (EN)<Input value={draft.en} onChange={(e) => change({ en: e.target.value })} /></Label>
       <Label>Na klik</Label><Select value={draft.action} onValueChange={(action: ButtonSettings["action"]) => change({ action })}><SelectTrigger aria-label="Na klik"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="link">Otvori link</SelectItem><SelectItem value="chat">Otvori chatbot</SelectItem><SelectItem value="scroll">Idi do sekcije</SelectItem></SelectContent></Select>
-      {draft.action !== "chat" && <Label className="flex flex-col gap-2">{draft.action === "link" ? "Link" : "Oznaka sekcije"}<Input value={draft.target} placeholder={draft.action === "link" ? "https://…" : "kontakt"} onChange={(e) => change({ target: e.target.value })} /></Label>}
+      {draft.action === "scroll" && sections.length > 0 && <Label className="flex flex-col gap-2">Sekcija na stranici<Select value={sections.some((s) => s.id === draft.target.replace(/^#/, "")) ? draft.target.replace(/^#/, "") : undefined} onValueChange={(target) => change({ target })}><SelectTrigger aria-label="Sekcija na stranici"><SelectValue placeholder="Izaberite sekciju" /></SelectTrigger><SelectContent>{sections.map((s) => <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>)}</SelectContent></Select></Label>}
+      {draft.action !== "chat" && <Label className="flex flex-col gap-2">{draft.action === "link" ? "Link (može i #sekcija)" : "Ankor sekcije"}<Input value={draft.target} placeholder={draft.action === "link" ? "https://…" : "kontakt"} onChange={(e) => change({ target: e.target.value })} /></Label>}
       {draft.action === "link" && <Label className="flex items-center justify-between gap-3">Otvori u novoj kartici<Switch checked={draft.newTab} onCheckedChange={(newTab) => change({ newTab })} /></Label>}
       <Label>Izgled dugmeta</Label><Select value={draft.variant} onValueChange={(variant: ButtonSettings["variant"]) => change({ variant })}><SelectTrigger aria-label="Izgled dugmeta"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="default">Puno</SelectItem><SelectItem value="outline">Sa okvirom</SelectItem><SelectItem value="secondary">Blago</SelectItem></SelectContent></Select>
       <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Otkaži</Button><Button disabled={busy} onClick={persist}><MousePointerClick />Sačuvaj</Button></DialogFooter>
