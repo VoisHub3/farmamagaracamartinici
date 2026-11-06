@@ -516,7 +516,7 @@ function TextImageBlock({ id }: { id: string }) {
 }
 
 function GalleryBlock({ id, embedded = false }: { id: string; embedded?: boolean }) {
-  const { json, img, save, editMode } = useSite();
+  const { json, img, save, editMode, lang } = useSite();
   const listKey = `gal:${id}`;
   const items = json<string[]>(listKey, []);
   const input = useRef<HTMLInputElement>(null);
@@ -574,7 +574,7 @@ function GalleryBlock({ id, embedded = false }: { id: string; embedded?: boolean
         )}
       </div>
       {!editMode && items.length > limit && (
-        <div className="mt-8 text-center"><Button variant="outline" onClick={() => setLimit((l) => l + 9)}>Prikaži više</Button></div>
+        <div className="mt-8 text-center"><Button variant="outline" onClick={() => setLimit((l) => l + 9)}>{lang === "en" ? "Show more" : "Prikaži više"}</Button></div>
       )}
       {editMode && <input ref={input} type="file" accept="image/*" multiple hidden onChange={(e) => addFiles(e.target.files)} />}
       {!editMode && items.length === 0 && <p className="mt-6 text-center text-muted-foreground">—</p>}
