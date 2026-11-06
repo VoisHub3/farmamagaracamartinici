@@ -20,6 +20,51 @@ export function safeBuilderLink(value: string): string | undefined {
   return undefined;
 }
 
+const anchorAliases: Record<string, string[]> = {
+  prica: ["story", "section"], story: ["story", "section"], mlijeko: ["milk"], milk: ["milk"],
+  edukacije: ["education"], education: ["education"], posjete: ["visits"], visits: ["visits"],
+  apartmani: ["apartments"], apartments: ["apartments"], galerija: ["gallery"], gallery: ["gallery"],
+  kontakt: ["contact"], contact: ["contact"], chat: ["chat"], asistent: ["chat"],
+};
+
+/** Finds the page element for a hash such as #prica, #galerija, #kontakt or #section-<id>. */
+export function findAnchorTarget(hash: string): HTMLElement | null {
+  const name = decodeURIComponent(hash.replace(/^#/, "")).trim();
+  if (!name) return null;
+  const direct = document.getElementById(name) ?? document.getElementById(`section-${name}`);
+  if (direct) return direct;
+  const lower = name.toLowerCase();
+  const named = document.querySelector<HTMLElement>(`[data-anchor="${CSS.escape(lower)}"]`);
+  if (named) return named;
+  for (const type of anchorAliases[lower] ?? [lower]) {
+    const el = document.querySelector<HTMLElement>(`[data-block-type="${CSS.escape(type)}"]`);
+    if (el) return el;
+  }
+  const slug = (text: string) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/gi, "dj").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const wanted = slug(name);
+  // Menu labels: "#kontakt" matches the menu item named "Kontakt".
+  for (const link of Array.from(document.querySelectorAll<HTMLAnchorElement>('a[href*="#section-"]'))) {
+    if (slug(link.textContent ?? "") === wanted) {
+      const el = document.getElementById(link.hash.slice(1));
+      if (el) return el;
+    }
+  }
+  // Section headings: "#prenocite" matches "Prenoćite na farmi".
+  for (const el of Array.from(document.querySelectorAll<HTMLElement>("[data-menu-section]"))) {
+    const words = slug(el.querySelector("h1,h2,h3")?.textContent ?? "").split("-");
+    if (words.includes(wanted) || slug(el.querySelector("h1,h2,h3")?.textContent ?? "").startsWith(wanted)) return el;
+  }
+  return null;
+}
+
+export function scrollToAnchor(hash: string): boolean {
+  const target = findAnchorTarget(hash);
+  if (!target) return false;
+  target.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+  history.replaceState(null, "", `#${hash.replace(/^#/, "")}`);
+  return true;
+}
+
 type ButtonSettings = { sr: string; en: string; action: "link" | "chat" | "scroll"; target: string; newTab: boolean; variant: "default" | "outline" | "secondary" | "hero" | "heroGhost" };
 const buttonDefaults: ButtonSettings = { sr: "Novo dugme", en: "New button", action: "link", target: "", newTab: false, variant: "default" };
 
@@ -41,15 +86,13 @@ export function BuilderButton({ id, fallback, className, size }: { id: string; f
   const run = () => {
     if (settings.action === "chat") setChatOpen(true);
     if (settings.action === "scroll") {
-      const target = document.getElementById(settings.target.replace(/^#/, ""));
-      if (target) target.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
-      else toast.error(lang === "sr" ? "Sekcija nije pronađena" : "Section not found");
+      if (!scrollToAnchor(settings.target)) toast.error(lang === "sr" ? "Sekcija nije pronađena" : "Section not found");
     }
   };
   const persist = async () => {
     if (!draft.sr.trim() && !draft.en.trim()) { toast.error("Upišite tekst dugmeta"); return; }
     if (draft.action === "link" && !safeBuilderLink(draft.target)) { toast.error("Unesite ispravan link (https://, /, #, mailto: ili tel:)"); return; }
-    if (draft.action === "scroll" && !/^[\w-]+$/.test(draft.target.replace(/^#/, ""))) { toast.error("Unesite oznaku sekcije, npr. kontakt"); return; }
+    if (draft.action === "scroll" && !/^[\w-]+$/.test(draft.target.replace(/^#/, ""))) { toast.error("Unesite ankor, npr. #prica, #galerija ili #kontakt"); return; }
     setBusy(true);
     try { await save({ [key]: JSON.stringify(draft) }); setOpen(false); toast.success("Dugme sačuvano"); }
     catch { toast.error("Dugme nije sačuvano"); }
@@ -57,7 +100,7 @@ export function BuilderButton({ id, fallback, className, size }: { id: string; f
   };
   return <>
     <div className="flex min-w-0 flex-wrap items-center gap-2">
-      {href ? <Button asChild variant={settings.variant} size={size} className={`h-auto min-h-9 max-w-full whitespace-normal break-words ${className ?? ""}`}><a href={href} target={settings.newTab ? "_blank" : undefined} rel={settings.newTab ? "noopener noreferrer" : undefined}>{label}</a></Button>
+      {href ? <Button asChild variant={settings.variant} size={size} className={`h-auto min-h-9 max-w-full whitespace-normal break-words ${className ?? ""}`}><a href={href} onClick={(e) => { if (href.startsWith("#") && !settings.newTab) { e.preventDefault(); if (!scrollToAnchor(href)) toast.error(lang === "sr" ? "Sekcija nije pronađena" : "Section not found"); } }} target={settings.newTab ? "_blank" : undefined} rel={settings.newTab ? "noopener noreferrer" : undefined}>{label}</a></Button>
         : <Button variant={settings.variant} disabled={settings.action === "link"} size={size} className={`h-auto min-h-9 max-w-full whitespace-normal break-words ${className ?? ""}`} onClick={run}>{label}</Button>}
       {editMode && <Button variant="outline" size="icon-sm" aria-label="Podesi dugme" title="Podesi dugme" onClick={openDialog}><Settings2 /></Button>}
     </div>
@@ -66,7 +109,7 @@ export function BuilderButton({ id, fallback, className, size }: { id: string; f
       <Label className="flex flex-col gap-2">Tekst dugmeta (EN)<Input value={draft.en} onChange={(e) => change({ en: e.target.value })} /></Label>
       <Label>Na klik</Label><Select value={draft.action} onValueChange={(action: ButtonSettings["action"]) => change({ action })}><SelectTrigger aria-label="Na klik"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="link">Otvori link</SelectItem><SelectItem value="chat">Otvori chatbot</SelectItem><SelectItem value="scroll">Idi do sekcije</SelectItem></SelectContent></Select>
       {draft.action === "scroll" && sections.length > 0 && <Label className="flex flex-col gap-2">Sekcija na stranici<Select value={sections.some((s) => s.id === draft.target.replace(/^#/, "")) ? draft.target.replace(/^#/, "") : ""} onValueChange={(target) => change({ target })}><SelectTrigger aria-label="Sekcija na stranici"><SelectValue placeholder="Izaberite sekciju" /></SelectTrigger><SelectContent>{sections.map((s) => <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>)}</SelectContent></Select></Label>}
-      {draft.action !== "chat" && <Label className="flex flex-col gap-2">{draft.action === "link" ? "Link (može i #sekcija)" : "Ankor sekcije"}<Input value={draft.target} placeholder={draft.action === "link" ? "https://…" : "kontakt"} onChange={(e) => change({ target: e.target.value })} /></Label>}
+      {draft.action !== "chat" && <Label className="flex flex-col gap-2">{draft.action === "link" ? "Link ili ankor (npr. #prica, #galerija, #kontakt)" : "Ili upišite ankor (npr. #prica, #galerija, #kontakt)"}<Input value={draft.target} placeholder={draft.action === "link" ? "https://… ili #kontakt" : "#kontakt"} onChange={(e) => change({ target: e.target.value })} /></Label>}
       {draft.action === "link" && <Label className="flex items-center justify-between gap-3">Otvori u novoj kartici<Switch checked={draft.newTab} onCheckedChange={(newTab) => change({ newTab })} /></Label>}
       <Label>Izgled dugmeta</Label><Select value={draft.variant} onValueChange={(variant: ButtonSettings["variant"]) => change({ variant })}><SelectTrigger aria-label="Izgled dugmeta"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="default">Puno</SelectItem><SelectItem value="outline">Sa okvirom</SelectItem><SelectItem value="secondary">Blago</SelectItem><SelectItem value="hero">Glavno (naglašeno)</SelectItem><SelectItem value="heroGhost">Prozirno</SelectItem></SelectContent></Select>
       <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Otkaži</Button><Button disabled={busy} onClick={persist}><MousePointerClick />Sačuvaj</Button></DialogFooter>

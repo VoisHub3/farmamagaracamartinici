@@ -98,6 +98,8 @@ export function SitePage({ slug }: { slug: string }) {
           key={b.id}
           id={sectionAnchor(b.id)}
           data-menu-section
+          data-block-type={b.type}
+          data-anchor={json<SectionSettings | null>(`section-style:${b.id}`, null)?.anchor || undefined}
           className={cn("relative", json<SectionSettings | null>(`section-style:${b.id}`, null) && b.type !== "section" && "builder-configured", editMode && "group/block", dragOver === i && dragFrom !== i && "ring-4 ring-edit ring-inset")}
           style={(() => { const settings = json<SectionSettings | null>(`section-style:${b.id}`, null); return settings && b.type !== "section" ? sectionStyle(settings) : undefined; })()}
           onDragOver={(e) => {
